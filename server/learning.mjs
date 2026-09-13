@@ -16,7 +16,6 @@ Coordinates in pixels. Palette: cobalt #4268d8, amber #b88317, teal #258579, ink
 Prediction question MUST explicitly name fixed conditions and be invariant to later control changes; its correctIndex is zero-based. Give exactly one feedback string per option explaining the reasoning. Followup tests transfer to a new situation, also with feedback per option. Include 1–6 assumptions, each 1–500 characters. Combine related conditions concisely; preserve scientifically necessary limitations. Assumptions clearly distinguish a model/analogy from observed evidence. Explanation (under 160 words) must match the code. For stochastic phenomena use exact probabilities or clearly label simulated samples. Do not imply small samples prove statistical laws. Title short, domain under 60 characters, code under 12000 characters. All displayed text is plain text. Do not include markdown fences.`;
 
 const json=(value,status=200)=>Response.json(value,{status,headers:{'cache-control':'no-store'}});
-const active=new Set();
 const MAX_IMAGE_BYTES=4*1024*1024;
 const str={type:'string'},num={type:'number'};
 const object=properties=>({type:'object',properties,required:Object.keys(properties),additionalProperties:false});
@@ -138,8 +137,8 @@ export async function handleLearningRequest(request,env={},fetcher=fetch){
  log('request_received');
  const invalid=validateInput(route,data);if(invalid){log('input_rejected');return fail('invalid_input',invalid,400);}
  if(!env.OPENAI_API_KEY)return json({error:'Live Astra features await secure API-key setup. The built-in experiment remains available.'},503);
- if(active.has(user))return json({error:'A learning request is already running. Please wait for it to finish.'},429);
- active.add(user);
+ // Keep lifecycle state inside each request. A cancelled invocation must not
+ // leave a shared busy lock that blocks later requests from the same learner.
  let phase='connect';
  try{
   request.signal.throwIfAborted();
@@ -175,5 +174,4 @@ export async function handleLearningRequest(request,env={},fetcher=fetch){
   const messages={timeout:'Astra took too long to respond. Please try again.',cancelled:'The request was cancelled.',connection_error:'Could not connect to Astra. Please try again.',invalid_json:'Astra returned an unreadable or oversized response. Please try again.',invalid_output:'Astra returned output that failed validation. Please try again.'};
   return fail(code,messages[code]);
  }
- finally{active.delete(user);}
 }

@@ -149,6 +149,8 @@ For the hosted app, set `OPENAI_API_KEY` as a **secret** in the Site's runtime e
 
 `npm run build` emits a self-contained Cloudflare Worker at `dist/server/index.js` and copies the Site manifest to `dist/.openai/hosting.json`. The source manifest records the existing Site so later deployments reuse it. AI routes expect a trusted `oai-authenticated-user-id` from OpenAI Sites dispatch and an exact same-origin request. `/api/status` exposes only a sign-in boolean, not the user's identity. Another hosting platform needs a trusted authentication integration. Do not expose the local developer identity publicly.
 
+AI requests keep their lifecycle state within the request, with abort signals and a 110-second upstream timeout. There is no shared per-user busy lock to retain after a cancelled invocation. The client guards duplicate actions and discards responses from cancelled or superseded experiments; separate browser tabs can make independent requests.
+
 Live sessions use a server-side signed ownership token, with the API key as the signing secret unless `LIVE_SESSION_SECRET` is configured. Key rotation invalidates outstanding stop tokens; configure a stable separate server secret for deployed use. Session duration is bounded by server configuration. Interrupting speech does not inherently cancel backend work; the application separately guards cancellation and stale lesson versions.
 
 ## Current verification status
