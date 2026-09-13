@@ -8,6 +8,15 @@ function clock(){
 }
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 
+test('guided playback stops exactly at its teaching moment and ordinary play can continue',async()=>{
+ const time=clock(),frames=[];
+ const playback=createPlayback({...time,duration:1000,render:async p=>frames.push(p)});
+ await playback.playTo(.45);time.advance(900);await flush();
+ assert.equal(playback.getState().playing,false);assert.equal(frames.at(-1),.45);
+ await playback.play();time.advance(100);await flush();assert.equal(playback.getState().progress,.55);
+ assert.throws(()=>playback.playTo(2),RangeError);await playback.destroy();
+});
+
 test('play, pause, speed changes and restart use elapsed time without changing a paused position',async()=>{
  const time=clock(),frames=[],changes=[];
  const playback=createPlayback({...time,duration:1000,render:async progress=>frames.push(progress),onChange:state=>changes.push(state)});

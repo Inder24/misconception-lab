@@ -37,7 +37,7 @@ test('teaching screenshot import uses image input and rejects unmapped or out-of
 });
 
 test('teacher context and selected experiment continue through generation, repair, revision and tutoring',async()=>{
- const lesson=starter.lesson,params={mass_a:100,mass_b:1000,air:0};
+ const lesson=starter.lesson,params={mass_a:100,mass_b:1000,air:0,height:5};
  const payloads={lessons:{claim:card.claim,experimentRequest:card.experiment},repair:{claim:card.claim,lesson,attempt:1,failures:[{name:'Units',detail:'Show seconds.'}]},revise:{lesson,params,request:'Change gravity.'},tutor:{lesson,params,selectedIndex:2,reason:'Equal acceleration.',confidence:80,results:{metrics:[{label:'Time',value:'1.01 s'}],summary:'Together'},history:[]}};
  const tutor={message:'Both accelerate equally.',reasoningFocus:'Acceleration and force.',question:lesson.followup};
  for(const [route,payload]of Object.entries(payloads)){

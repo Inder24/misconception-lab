@@ -54,7 +54,14 @@ export async function preflightLesson(lesson,run,{signal,onProgress}={}){
    const result=await run({...item.params},{...item.viewport},{signal});aborted();validateExperimentResult(result,{requireMarks:true});
    checks.push({name,passed:true,detail:`Rendered ${result.marks.length} valid marks; ${conditions}`});
    runs.push(structuredClone({...item,metrics:result.metrics,summary:result.summary}));
-  }catch(error){aborted();if(error.name==='AbortError')throw error;checks.push({name,passed:false,detail:`${error.message||'Sandbox execution failed'}; ${conditions}`});}
+  }catch(error){
+   aborted();if(error.name==='AbortError')throw error;
+   checks.push({name,passed:false,detail:`${error.message||'Sandbox execution failed'}; ${conditions}`});
+   onProgress?.({completed:index+1,total:matrix.length,check:checks.at(-1)});
+   // A runtime error terminates its worker. Repair this cause in a fresh sandbox;
+   // further calls would only repeat "not ready" and obscure the useful evidence.
+   return {passed:false,checks,runs};
+  }
   onProgress?.({completed:index+1,total:matrix.length,check:checks.at(-1)});
  }
  return {passed:checks.every(c=>c.passed),checks,runs};

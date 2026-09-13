@@ -4,7 +4,7 @@ import {handleAPI} from '../server/api.mjs';
 import {starter} from '../public/starter.js';
 const key={OPENAI_API_KEY:'test-secret'};
 const lesson=starter.lesson;
-const params={mass_a:100,mass_b:1000,air:0};
+const params={mass_a:100,mass_b:1000,air:0,height:5};
 const results={metrics:[{label:'Sphere A',value:'1.01 s'},{label:'Sphere B',value:'1.01 s'}],summary:'Both spheres land together.'};
 const runs=[{params,viewport:{width:360,height:340,progress:1},...results}];
 const image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZucAAAAASUVORK5CYII=';

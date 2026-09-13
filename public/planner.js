@@ -1,6 +1,7 @@
 import {prepareImage} from './image-input.js';
 import {validateBrief,validatePlan,validateBriefImport} from './planner-schema.js';
 import {experimentStarters} from './experiment-starters.js';
+import {showScreen,currentScreen} from './flow.js';
 
 const $=id=>document.getElementById(id);
 const fields={topic:'brief-topic',grade:'brief-grade',subject:'brief-subject',learningGoal:'brief-goal',observedBeliefs:'brief-beliefs',includeQuickChecks:'brief-checks'};
@@ -8,12 +9,8 @@ const fieldNames={topic:'Topic',grade:'Grade',subject:'Subject',learningGoal:'Le
 const element=(tag,className,content)=>{const node=document.createElement(tag);if(className)node.className=className;if(content)node.textContent=content;return node;};
 
 export function showWorkspace(name,{focus=false}={}){
-  for(const id of ['experiment','planner']){
-    const active=id===name,tab=$('tab-'+id);
-    tab.setAttribute('aria-selected',String(active));tab.tabIndex=active?0:-1;$('panel-'+id).hidden=!active;
-    if(active&&focus)tab.focus();
-  }
-  dispatchEvent(new CustomEvent('workspacechange',{detail:name}));
+  showScreen(name==='experiment'?'lab':'planner');
+  if(focus)$('tab-'+name).focus({preventScroll:true});
 }
 
 export function setupPlanner({request,onBuild,onOpenStarter,onBusy,isLabBusy}){
@@ -46,7 +43,7 @@ export function setupPlanner({request,onBuild,onOpenStarter,onBusy,isLabBusy}){
       const result=await request('/api/plan',{brief},{signal});if(!current())return;
       if(!validatePlan(result))throw Error('The lesson plan could not be read. Please try again.');
       renderIdeas(result.cards,brief);$('planner-status').textContent='Choose a belief below. You can edit its claim before building.';
-      $('planner-results').scrollIntoView({behavior:'smooth',block:'start'});
+      if(currentScreen()==='planner')$('planner-results').scrollIntoView({behavior:'smooth',block:'start'});
     });
   });
   function renderIdeas(cards,brief){
@@ -66,7 +63,7 @@ export function setupPlanner({request,onBuild,onOpenStarter,onBusy,isLabBusy}){
       form.addEventListener('submit',event=>{event.preventDefault();const edited=claim.value.trim();if(edited.length<8){claim.setCustomValidity('Write a claim with at least eight non-space characters.');claim.reportValidity();return;}claim.setCustomValidity('');
         operate('Building and checking your selected experiment…',async(signal,current)=>{
           const result=await onBuild({claim:edited,brief,experimentRequest:`${proposal.input.value.trim()}\nChange: ${variable.input.value.trim()}\nReasoning to explore: ${rationale.input.value.trim()}${brief.includeQuickChecks?'\nDiagnostic question: '+quick.input.value.trim():''}`},{signal});
-          if(current()&&result?.ok){$('planner-status').textContent='Your experiment is ready in the Experiment tab.';showWorkspace('experiment');$('lesson-title').setAttribute('tabindex','-1');$('lesson-title').focus({preventScroll:true});$('lesson-title').scrollIntoView({behavior:'smooth',block:'start'});}
+          if(current()&&result?.ok){$('planner-status').textContent='Your experiment is ready in the workbench.';if(currentScreen()==='lab')showWorkspace('experiment');}
         });
       });
       claim.addEventListener('input',()=>claim.setCustomValidity(''));
@@ -98,7 +95,7 @@ export function setupPlanner({request,onBuild,onOpenStarter,onBusy,isLabBusy}){
     const body=element('div','starter-card-body'),tags=element('div','starter-tags');tags.append(element('span',null,entry.catalog.grade),element('span',null,'Reference model'));
     body.append(tags,element('h3',null,entry.lesson.title),element('p','small-note',entry.catalog.description));
     const button=element('button','secondary','Open '+entry.catalog.topic+' lab ↗');button.type='button';body.append(button);item.append(art,body);$('starter-cards').append(item);
-    button.addEventListener('click',()=>operate('Checking the reference experiment…',async(signal,current)=>{const result=await onOpenStarter(entry,{signal});if(current()&&result?.ok){$('planner-status').textContent='The reference lab is ready. Make a prediction to begin.';showWorkspace('experiment');$('lesson-title').setAttribute('tabindex','-1');$('lesson-title').focus({preventScroll:true});$('lesson-title').scrollIntoView({behavior:'smooth',block:'start'});}}));
+    button.addEventListener('click',()=>operate('Checking the reference experiment…',async(signal,current)=>{const result=await onOpenStarter(entry,{signal});if(current()&&result?.ok){$('planner-status').textContent='The reference lab is ready. Make a prediction to begin.';if(currentScreen()==='planner')showWorkspace('experiment');}}));
   }
   update();return {setBusy(value){externalBusy=Boolean(value);update();},cancel};
 }

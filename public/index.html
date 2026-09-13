@@ -5,12 +5,12 @@
   <meta name="description" content="A living laboratory for everyday beliefs. Predict, experiment, and rethink with your AI lab partner.">
   <title>Misconception Lab · A little doubt. A new discovery.</title>
   <link rel="stylesheet" href="/lab.css"><link rel="stylesheet" href="/debug-panel.css">
-  <link rel="stylesheet" href="/planner.css"><link rel="stylesheet" href="/discovery.css">
+  <link rel="stylesheet" href="/planner.css"><link rel="stylesheet" href="/discovery.css"><link rel="stylesheet" href="/drop-lab.css"><link rel="stylesheet" href="/walkthrough.css"><link rel="stylesheet" href="/math-lab.css"><link rel="stylesheet" href="/flow.css"><link rel="stylesheet" href="/build-view.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23285f42'/%3E%3Ctext x='8' y='24' fill='white' font-size='24'%3Eλ%3C/text%3E%3C/svg%3E">
 </head>
-<body><a class="skip-link" href="#claim">Skip to your experiment</a>
+<body data-screen="home"><a class="skip-link" href="#main-content">Skip to content</a>
   <header class="site-header">
-      <a class="brand" href="/" aria-label="Misconception Lab home"
+      <a class="brand" href="#home" data-screen-link="home" aria-label="Misconception Lab home"
         ><span class="brand-icon"
           ><svg
             aria-hidden="true"
@@ -28,189 +28,67 @@
             /></svg></span
         ><span>misconception<span class="brand-light">lab</span></span></a
       >
-      <nav aria-label="Main navigation"><a href="#lesson-title">The workbench</a><a href="#history">My experiments</a></nav>
-      <span class="header-note">A little wonder goes a long way.</span>
+      <nav aria-label="Main navigation"><a href="#lab" data-screen-link="lab">The workbench</a><a href="#shelf" data-screen-link="shelf">My experiments</a><a href="#planner" data-screen-link="planner">Plan a lesson</a></nav>
+
     </header>
-  <main>
-    <div class="workspace-tabs" role="tablist" aria-label="Lab workspace">
+  <main id="main-content" tabindex="-1">
+<div class="workspace-tabs" role="tablist" aria-label="Lab workspace">
       <button id="tab-experiment" type="button" role="tab" aria-selected="true" aria-controls="panel-experiment">Experiment</button>
       <button id="tab-planner" type="button" role="tab" aria-selected="false" aria-controls="panel-planner" tabindex="-1">Plan a lesson <span aria-hidden="true">↗</span></button>
     </div>
     <div class="generation" id="generation" hidden role="status"><span class="spinner" aria-hidden="true"></span><div><strong id="generation-title">Building your experiment</strong><p id="generation-detail">Designing a test for your claim.</p></div><button type="button" class="text-button" id="cancel">Cancel</button></div>
     <p id="error" class="error" role="alert" hidden></p>
-    <div id="panel-experiment" role="tabpanel" aria-labelledby="tab-experiment">
-    <section class="claim-panel" aria-labelledby="claim-heading">
-              <div class="hero-copy">
-          <div class="eyebrow">
-            <span class="tiny-dot"></span> BIG QUESTIONS. SMALL EXPERIMENTS.
-          </div>
-          <h1 id="claim-heading">
-            What will happen?<br /><span>Let’s find out.</span>
-          </h1>
-          <p class="intro">
-            Bring a hunch. Make a prediction. <br />Discover something you
-            didn’t expect.
-          </p>
-          <button class="starter-link" type="button" id="try-starter">
-            <span class="play-icon"
-              ><svg
-                aria-hidden="true"
-                focusable="false"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 256 256"
-                fill="currentColor"
-              >
-                <path
-                  d="M228.23,134.69,84.15,222.81A8,8,0,0,1,72,216.12V39.88a8,8,0,0,1,12.15-6.69l144.08,88.12A7.82,7.82,0,0,1,228.23,134.69Z"
-                  opacity="0.2"
-                />
-                <path
-                  d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM80,215.94V40l143.83,88Z"
-                /></svg></span
-            ><span
-              >Try the falling-objects challenge<small
-                >Ready to play · no waiting</small
-              ></span
-            ><svg
-              aria-hidden="true"
-              focusable="false"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 256 256"
-              fill="currentColor"
-            >
-              <path d="M216,128l-72,72V56Z" opacity="0.2" />
-              <path
-                d="M221.66,122.34l-72-72A8,8,0,0,0,136,56v64H40a8,8,0,0,0,0,16h96v64a8,8,0,0,0,13.66,5.66l72-72A8,8,0,0,0,221.66,122.34ZM152,180.69V75.31L204.69,128Z"
-              />
-            </svg>
-          </button>
-        </div>
-
-      <div class="question-card"><div class="card-kicker">YOUR CURIOSITY STARTS HERE</div><form id="claim-form" class="preview-claim-form">
-        <label for="claim">What do you think is true?</label><p class="field-hint">Type a hunch, add a photo, or sketch your idea.</p>
-        <textarea id="claim" rows="2" maxlength="600" required minlength="8" placeholder="I think heavier objects always fall faster…"></textarea>
-        <div class="input-actions"><div class="input-tools"><label class="tool-button" for="photo-input"><span aria-hidden="true">▧</span> Add a photo<input id="photo-input" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="open-sketch" type="button" class="tool-button"><span aria-hidden="true">✎</span> Sketch an idea</button></div><button class="primary" id="generate" type="submit">Build an experiment <span aria-hidden="true">↗</span></button></div>
-      </form><p class="card-footnote">An experiment made for your question.</p></div>
+    <div id="panel-experiment"><section id="screen-home" class="flow-screen gallery-home" aria-labelledby="home-title">
+  <div class="gallery-hero-copy"><p class="flow-eyebrow">BIG QUESTIONS. SMALL EXPERIMENTS.</p><h1 id="home-title" class="flow-title">A little doubt.<br><span>A new discovery.</span></h1><p class="flow-intro">Test your everyday intuitions with interactive experiments and an AI lab partner.<br>Bring a hunch. See what happens. Learn something new.</p><div class="gallery-actions"><a class="flow-primary" href="#choose" data-screen-link="choose">Explore experiments <span aria-hidden="true">↗</span></a><a class="flow-secondary" href="#create" data-screen-link="create">Create your own <span aria-hidden="true">→</span></a></div></div>
+  <div class="gallery-display" aria-label="A gallery of three experiments"><div class="gallery-exhibits"><figure class="gallery-exhibit"><svg class="exhibit-art" viewBox="0 0 240 240" aria-hidden="true" focusable="false"><defs><radialGradient id="blue-home-fall" cx="30%" cy="22%" r="75%"><stop stop-color="#d9eaff"/><stop offset=".18" stop-color="#6691ff"/><stop offset=".5" stop-color="#174bee"/><stop offset=".82" stop-color="#0834ae"/><stop offset="1" stop-color="#10225b"/></radialGradient><radialGradient id="gold-home-fall" cx="30%" cy="22%" r="75%"><stop stop-color="#fffbe0"/><stop offset=".2" stop-color="#ffe492"/><stop offset=".52" stop-color="#be9436"/><stop offset=".83" stop-color="#806019"/><stop offset="1" stop-color="#4c3919"/></radialGradient><radialGradient id="shadow-home-fall"><stop stop-color="#1b2a53" stop-opacity=".3"/><stop offset="1" stop-color="#1b2a53" stop-opacity="0"/></radialGradient></defs><ellipse cx="67" cy="194" rx="48" ry="9" fill="url(#shadow-home-fall)"/><ellipse cx="167" cy="194" rx="48" ry="9" fill="url(#shadow-home-fall)"/><circle cx="67" cy="144" r="42" fill="url(#blue-home-fall)"/><circle cx="167" cy="144" r="42" fill="url(#gold-home-fall)"/></svg><figcaption class="exhibit-caption"><strong>Falling objects</strong><span>Same size. Different masses.<br>What will happen?</span></figcaption></figure><figure class="gallery-exhibit"><svg class="exhibit-art" viewBox="0 0 240 240" aria-hidden="true" focusable="false"><defs><radialGradient id="steel-home-cradle" cx="30%" cy="22%" r="80%"><stop stop-color="#fff"/><stop offset=".35" stop-color="#e2e9f3"/><stop offset=".68" stop-color="#8c9bad"/><stop offset="1" stop-color="#43516a"/></radialGradient><radialGradient id="brass-home-cradle" cx="30%" cy="22%" r="80%"><stop stop-color="#fff5c2"/><stop offset=".4" stop-color="#e4bb62"/><stop offset="1" stop-color="#806322"/></radialGradient></defs><path d="M19 204h203v11H19z" fill="#dddde1"/><path d="M29 205V54h188v151" fill="none" stroke="#a5adba" stroke-width="6"/><path d="M30 56h186" stroke="#e7eaf0" stroke-width="2"/><g stroke="#8590a2" stroke-width="1.5"><path d="M57 57 26 133M88 57v107M119 57v107M150 57v107M181 57v107"/></g><circle cx="26" cy="143" r="15.5" fill="url(#brass-home-cradle)"/><g fill="url(#steel-home-cradle)"><circle cx="88" cy="177" r="15.5"/><circle cx="119" cy="177" r="15.5"/><circle cx="150" cy="177" r="15.5"/><circle cx="181" cy="177" r="15.5"/></g><path d="M45 148q8 19 25 24" stroke="#294efd" stroke-width="1.5" stroke-dasharray="3 4" fill="none"/></svg><figcaption class="exhibit-caption"><strong>Newton’s cradle</strong><span>One ball in. What swings out?<br>Follow the energy.</span></figcaption></figure><figure class="gallery-exhibit"><svg class="exhibit-art" viewBox="0 0 240 240" aria-hidden="true" focusable="false"><defs><linearGradient id="paper-home-math" x2=".8" y2="1"><stop stop-color="#fffdf1"/><stop offset="1" stop-color="#ede2c5"/></linearGradient></defs><path d="M59 26h122l-3 8 5 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 2 10H59l3-9-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8z" fill="url(#paper-home-math)" stroke="#e6dabd"/><path d="M71 38h99v168H71z" fill="none" stroke="#caba942f"/><text x="120" y="90" text-anchor="middle" fill="#172140" font-family="Arial,sans-serif" font-size="33" font-weight="750">−50%</text><path d="M120 110v32m-7-9 7 9 7-9" fill="none" stroke="#536080" stroke-width="2.5"/><text x="120" y="184" text-anchor="middle" fill="#172140" font-family="Arial,sans-serif" font-size="33" font-weight="750">+50%</text></svg><figcaption class="exhibit-caption"><strong>Everyday percentages</strong><span>50% down. 50% up.<br>A perfect undo?</span></figcaption></figure></div><div class="gallery-plinth" aria-hidden="true"><span class="plinth-ruler">0　　5　　10 cm</span><span class="plinth-label">CURIOSITY COLLECTION · 001</span></div></div></section>
+<section id="screen-choose" class="flow-screen gallery-choose" aria-labelledby="choose-title" hidden><a class="flow-back" href="#home" data-screen-link="home"><span aria-hidden="true">←</span> Back to home</a><div class="choose-layout"><div class="choose-intro"><p class="flow-eyebrow">EXPLORE OUR EXPERIMENTS</p><h1 id="choose-title" class="flow-title">Start with<br>a little doubt.</h1><p class="flow-intro">Everyday intuitions can be surprising. Choose an experiment to see what really happens.</p><p class="flow-note">Curiosity looks good on you.</p></div><div class="experiment-menu"><button class="experiment-choice choice-fall" id="try-starter" type="button"><span class="choice-art"><svg class="exhibit-art" viewBox="0 0 240 240" aria-hidden="true" focusable="false"><defs><radialGradient id="blue-choose-fall" cx="30%" cy="22%" r="75%"><stop stop-color="#d9eaff"/><stop offset=".18" stop-color="#6691ff"/><stop offset=".5" stop-color="#174bee"/><stop offset=".82" stop-color="#0834ae"/><stop offset="1" stop-color="#10225b"/></radialGradient><radialGradient id="gold-choose-fall" cx="30%" cy="22%" r="75%"><stop stop-color="#fffbe0"/><stop offset=".2" stop-color="#ffe492"/><stop offset=".52" stop-color="#be9436"/><stop offset=".83" stop-color="#806019"/><stop offset="1" stop-color="#4c3919"/></radialGradient><radialGradient id="shadow-choose-fall"><stop stop-color="#1b2a53" stop-opacity=".3"/><stop offset="1" stop-color="#1b2a53" stop-opacity="0"/></radialGradient></defs><ellipse cx="67" cy="194" rx="48" ry="9" fill="url(#shadow-choose-fall)"/><ellipse cx="167" cy="194" rx="48" ry="9" fill="url(#shadow-choose-fall)"/><circle cx="67" cy="144" r="42" fill="url(#blue-choose-fall)"/><circle cx="167" cy="144" r="42" fill="url(#gold-choose-fall)"/></svg></span><span class="choice-copy"><strong>Does heavier mean faster?</strong><span>Drop two objects with different masses. Which lands first?</span><span class="choice-tags"><span>Physics</span><span>Ready to play</span></span></span><span class="choice-arrow" aria-hidden="true">›</span></button><button class="experiment-choice choice-cradle" id="try-cradle" type="button"><span class="choice-art"><svg class="exhibit-art" viewBox="0 0 240 240" aria-hidden="true" focusable="false"><defs><radialGradient id="steel-choose-cradle" cx="30%" cy="22%" r="80%"><stop stop-color="#fff"/><stop offset=".35" stop-color="#e2e9f3"/><stop offset=".68" stop-color="#8c9bad"/><stop offset="1" stop-color="#43516a"/></radialGradient><radialGradient id="brass-choose-cradle" cx="30%" cy="22%" r="80%"><stop stop-color="#fff5c2"/><stop offset=".4" stop-color="#e4bb62"/><stop offset="1" stop-color="#806322"/></radialGradient></defs><path d="M19 204h203v11H19z" fill="#dddde1"/><path d="M29 205V54h188v151" fill="none" stroke="#a5adba" stroke-width="6"/><path d="M30 56h186" stroke="#e7eaf0" stroke-width="2"/><g stroke="#8590a2" stroke-width="1.5"><path d="M57 57 26 133M88 57v107M119 57v107M150 57v107M181 57v107"/></g><circle cx="26" cy="143" r="15.5" fill="url(#brass-choose-cradle)"/><g fill="url(#steel-choose-cradle)"><circle cx="88" cy="177" r="15.5"/><circle cx="119" cy="177" r="15.5"/><circle cx="150" cy="177" r="15.5"/><circle cx="181" cy="177" r="15.5"/></g><path d="M45 148q8 19 25 24" stroke="#294efd" stroke-width="1.5" stroke-dasharray="3 4" fill="none"/></svg></span><span class="choice-copy"><strong>Newton’s cradle</strong><span>Lift one ball. Change the mass. See what swings out.</span><span class="choice-tags"><span>Motion & energy</span><span>Ready to play</span></span></span><span class="choice-arrow" aria-hidden="true">›</span></button><button class="experiment-choice choice-math" id="try-math" type="button"><span class="choice-art"><svg class="exhibit-art" viewBox="0 0 240 240" aria-hidden="true" focusable="false"><defs><linearGradient id="paper-choose-math" x2=".8" y2="1"><stop stop-color="#fffdf1"/><stop offset="1" stop-color="#ede2c5"/></linearGradient></defs><path d="M59 26h122l-3 8 5 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 4 9-4 8 2 10H59l3-9-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8-4-9 4-8z" fill="url(#paper-choose-math)" stroke="#e6dabd"/><path d="M71 38h99v168H71z" fill="none" stroke="#caba942f"/><text x="120" y="90" text-anchor="middle" fill="#172140" font-family="Arial,sans-serif" font-size="33" font-weight="750">−50%</text><path d="M120 110v32m-7-9 7 9 7-9" fill="none" stroke="#536080" stroke-width="2.5"/><text x="120" y="184" text-anchor="middle" fill="#172140" font-family="Arial,sans-serif" font-size="33" font-weight="750">+50%</text></svg></span><span class="choice-copy"><strong>Back where we started?</strong><span>50% down. 50% up. A perfect undo?</span><span class="choice-tags"><span>Everyday math</span><span>Ready to play</span></span></span><span class="choice-arrow" aria-hidden="true">›</span></button><a class="experiment-choice choice-custom" href="#create" data-screen-link="create"><span class="choice-art"><svg viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path d="m23 70-4 15 15-4 49-49-11-11zM63 30l11 11M23 70l11 11M72 21l6-6a5 5 0 0 1 7 0l4 4a5 5 0 0 1 0 7l-6 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg></span><span class="choice-copy"><strong>Have your own hunch?</strong><span>Make your own experiment from a question, photo, or sketch.</span></span><span class="choice-arrow" aria-hidden="true">›</span></a></div></div></section>
+<section id="screen-create" class="flow-screen gallery-create" aria-labelledby="claim-heading" hidden><a class="flow-back" href="#choose" data-screen-link="choose"><span aria-hidden="true">←</span> Back to experiments</a><div class="create-layout"><div class="create-intro"><p class="flow-eyebrow">YOUR CURIOSITY STARTS HERE</p><h1 id="claim-heading" class="flow-title">What do you<br>think is true?</h1><p class="flow-intro">Type a hunch, add a photo, or sketch your idea. We’ll help you turn it into an interactive experiment.</p><p class="flow-note">Curious ideas lead to real experiments.</p><a class="create-alternative" href="#planner" data-screen-link="planner">Teaching a class? Plan a lesson <span aria-hidden="true">↗</span></a></div><div class="create-workspace"><div class="question-card"><form id="claim-form" class="preview-claim-form">
+        <label for="claim">YOUR HUNCH</label>
+        <textarea id="claim" rows="7" maxlength="600" required minlength="8" placeholder="I think heavier objects always fall faster…"></textarea>
+        <div class="input-actions"><div class="input-tools"><label class="tool-button" for="photo-input"><span aria-hidden="true">▧</span> Add a photo<input id="photo-input" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="open-sketch" type="button" class="tool-button"><span aria-hidden="true">✎</span> Sketch an idea</button></div><button class="primary" id="generate" type="submit">Build my experiment <span aria-hidden="true">↗</span></button></div>
+      </form><p class="card-footnote create-draft-note">Your draft stays here when you go back.</p></div>
       <section id="visual-input" class="visual-input" hidden aria-label="Your image and interpretation">
         <div class="image-stage"><img id="image-preview" alt="Your uploaded diagram"><div id="image-regions" class="image-regions"></div></div>
         <div class="image-interpretation"><div class="section-line"><p class="eyebrow">WHAT WE SEE</p><button id="remove-image" type="button" class="text-button">Remove image</button></div><p id="image-status" role="status">Image ready for interpretation.</p><ul id="image-observations"></ul><p id="image-uncertainty" class="muted"></p><p class="small-note">The interpretation is editable in the claim above. Build when it matches what you meant.</p></div>
-      </section>
-    </section>
-
-      <section
-        class="challenge-library"
-        id="challenge-library"
-        aria-labelledby="challenge-heading"
-      >
-        <div class="section-label">
-          <h2 id="challenge-heading">Not sure where to start?</h2>
-          <span>Pick a belief to put to the test</span>
-        </div>
-        <div class="examples">
-          <button
-            class="challenge-card probability"
-            type="button"
-            data-example="A coin is more likely to land tails after five heads in a row."
-          >
-            <span class="challenge-icon"
-              ><svg
-                aria-hidden="true"
-                focusable="false"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 256 256"
-                fill="currentColor"
-              >
-                <path
-                  d="M240,132c0,19.88-35.82,36-80,36-19.6,0-37.56-3.17-51.47-8.44h0C146.76,156.85,176,142,176,124V96.72h0C212.52,100.06,240,114.58,240,132ZM176,84c0-19.88-35.82-36-80-36S16,64.12,16,84s35.82,36,80,36S176,103.88,176,84Z"
-                  opacity="0.2"
-                />
-                <path
-                  d="M184,89.57V84c0-25.08-37.83-44-88-44S8,58.92,8,84v40c0,20.89,26.25,37.49,64,42.46V172c0,25.08,37.83,44,88,44s88-18.92,88-44V132C248,111.3,222.58,94.68,184,89.57ZM232,132c0,13.22-30.79,28-72,28-3.73,0-7.43-.13-11.08-.37C170.49,151.77,184,139,184,124V105.74C213.87,110.19,232,122.27,232,132ZM72,150.25V126.46A183.74,183.74,0,0,0,96,128a183.74,183.74,0,0,0,24-1.54v23.79A163,163,0,0,1,96,152,163,163,0,0,1,72,150.25Zm96-40.32V124c0,8.39-12.41,17.4-32,22.87V123.5C148.91,120.37,159.84,115.71,168,109.93ZM96,56c41.21,0,72,14.78,72,28s-30.79,28-72,28S24,97.22,24,84,54.79,56,96,56ZM24,124V109.93c8.16,5.78,19.09,10.44,32,13.57v23.37C36.41,141.4,24,132.39,24,124Zm64,48v-4.17c2.63.1,5.29.17,8,.17,3.88,0,7.67-.13,11.39-.35A121.92,121.92,0,0,0,120,171.41v23.46C100.41,189.4,88,180.39,88,172Zm48,26.25V174.4a179.48,179.48,0,0,0,24,1.6,183.74,183.74,0,0,0,24-1.54v23.79a165.45,165.45,0,0,1-48,0Zm64-3.38V171.5c12.91-3.13,23.84-7.79,32-13.57V172C232,180.39,219.59,189.4,200,194.87Z"
-                /></svg></span
-            ><span class="challenge-copy"
-              ><span class="subject">CHANCE & LUCK</span
-              ><strong>Is a coin due for tails?</strong
-              ><span>Does a coin remember its last flip?</span></span
-            ><span class="card-arrow"
-              ><svg
-                aria-hidden="true"
-                focusable="false"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 256 256"
-                fill="currentColor"
-              >
-                <path d="M216,128l-72,72V56Z" opacity="0.2" />
-                <path
-                  d="M221.66,122.34l-72-72A8,8,0,0,0,136,56v64H40a8,8,0,0,0,0,16h96v64a8,8,0,0,0,13.66,5.66l72-72A8,8,0,0,0,221.66,122.34ZM152,180.69V75.31L204.69,128Z"
-                /></svg
-            ></span>
-          </button>
-          <button class="challenge-card cradle" type="button" id="try-cradle">
-            <span class="challenge-icon cradle-preview" aria-hidden="true">
-              <svg viewBox="0 0 120 100" fill="none">
-                <path d="M12 89V12h96v77M7 90h106" stroke="currentColor" stroke-width="3"/>
-                <g stroke="currentColor" stroke-width="1.5">
-                  <path d="M44 14v51M60 14v51M76 14v51M92 14v51"/>
-                  <g class="cradle-lift"><path d="M28 14v51"/><circle cx="28" cy="72" r="8" fill="#ffd479"/></g>
-                  <circle cx="44" cy="72" r="8" fill="#d3deec"/><circle cx="60" cy="72" r="8" fill="#d3deec"/>
-                  <circle cx="76" cy="72" r="8" fill="#d3deec"/><circle cx="92" cy="72" r="8" fill="#d3deec"/>
-                </g>
-              </svg>
-            </span>
-            <span class="challenge-copy"><span class="subject">MOTION & ENERGY</span><strong>Newton’s cradle</strong><span>Lift a ball. What happens next?</span></span>
-            <span class="card-arrow" aria-hidden="true">↗</span>
-          </button>
-          <button
-            class="challenge-card numbers"
-            type="button"
-            data-example="A 50% price drop followed by a 50% rise gets you back to the original price."
-          >
-            <span class="challenge-icon"
-              ><svg
-                aria-hidden="true"
-                focusable="false"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 256 256"
-                fill="currentColor"
-              >
-                <path
-                  d="M95.8,56.2a28,28,0,1,1-39.6,0A28,28,0,0,1,95.8,56.2Zm104,104a28,28,0,1,0,0,39.6A28,28,0,0,0,199.8,160.2Z"
-                  opacity="0.2"
-                />
-                <path
-                  d="M205.66,61.64l-144,144a8,8,0,0,1-11.32-11.32l144-144a8,8,0,0,1,11.32,11.31ZM50.54,101.44a36,36,0,0,1,50.92-50.91h0a36,36,0,0,1-50.92,50.91ZM56,76A20,20,0,1,0,90.14,61.84h0A20,20,0,0,0,56,76ZM216,180a36,36,0,1,1-10.54-25.46h0A35.76,35.76,0,0,1,216,180Zm-16,0a20,20,0,1,0-5.86,14.14A19.87,19.87,0,0,0,200,180Z"
-                /></svg></span
-            ><span class="challenge-copy"
-              ><span class="subject">EVERYDAY MATH</span
-              ><strong>Back where we started?</strong
-              ><span>50% down. 50% up. A perfect undo?</span></span
-            ><span class="card-arrow"
-              ><svg
-                aria-hidden="true"
-                focusable="false"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 256 256"
-                fill="currentColor"
-              >
-                <path d="M216,128l-72,72V56Z" opacity="0.2" />
-                <path
-                  d="M221.66,122.34l-72-72A8,8,0,0,0,136,56v64H40a8,8,0,0,0,0,16h96v64a8,8,0,0,0,13.66,5.66l72-72A8,8,0,0,0,221.66,122.34ZM152,180.69V75.31L204.69,128Z"
-                /></svg
-            ></span>
-          </button>
-        </div>
-      </section>
-<section class="lesson-section" aria-labelledby="lesson-title">
+      </section></div></div></section>
+<section id="screen-lab" class="flow-screen gallery-lab" aria-label="Your laboratory" hidden><div class="lab-backbar"><a class="flow-back" href="#choose" data-screen-link="choose"><span aria-hidden="true">←</span> Back to experiments</a><a class="flow-secondary" href="#create" data-screen-link="create">Try your own idea <span aria-hidden="true">↗</span></a></div><section class="lesson-section" aria-labelledby="lesson-title">
+    <div id="pending-lesson-heading" class="pending-lesson-heading" hidden><p class="eyebrow" id="pending-kind">NEW EXPERIMENT</p><h2 id="pending-title">Your idea is becoming an experiment.</h2><p>Make a fresh prediction when your new lab is ready.</p></div>
     <div class="lesson-heading"><div><p class="eyebrow" id="domain">PHYSICS</p><h2 id="lesson-title">Does heavier mean faster?</h2></div><ol class="steps" aria-label="Learning steps"><li id="step-predict" class="active"><span>01</span> Predict</li><li id="step-test"><span>02</span> Explore</li><li id="step-explain"><span>03</span> Rethink</li></ol></div>
     <div class="lab-layout">
       <div class="lab-column">
         <section class="workbench" aria-label="Interactive experiment">
+          <div id="pending-toolbar" class="pending-toolbar" hidden><span><i class="status-dot" aria-hidden="true"></i>Your new experiment</span><span>In progress</span></div>
           <div class="toolbar"><div><span class="status-dot" aria-hidden="true"></span><span id="visual-title">The experiment</span></div><span id="source" class="tag">Built-in example</span></div>
+          <div id="drop-controls" class="drop-controls" hidden>
+            <div class="drop-environment"><span class="drop-kicker">Inside the chamber</span><div class="drop-switch" role="group" aria-label="Drop environment"><button type="button" id="drop-vacuum" aria-pressed="true">Vacuum <span>No air</span></button><button type="button" id="drop-air" aria-pressed="false">Add air <span>Feel the drag</span></button></div></div>
+            <div class="drop-fair-test"><span class="drop-pair" aria-hidden="true"><i>A</i><i>B</i></span><span>Same size.<br><strong>Different masses.</strong></span></div>
+          </div>
+          <section id="math-editor" class="math-editor" aria-label="Make your own price experiment" hidden>
+            <div class="math-editor-heading"><div><span class="math-kicker">YOUR PRICE. YOUR EXPERIMENT.</span><h3>Will you get your money back?</h3></div><span class="math-receipt-icon" aria-hidden="true">$</span></div>
+            <form id="math-input-form">
+              <div class="math-price-row"><label for="math-amount">Starting price <span class="math-price-input"><span aria-hidden="true">$</span><input id="math-amount" type="number" min="1" max="1000" step="1" value="100" required inputmode="numeric"></span></label><p>Two changes.<br>The percentage base changes too.</p></div>
+              <div class="math-change-fields">
+                <div class="math-change-field math-discount-field"><label for="math-discount">01 · Take off <span class="math-percent-input"><input id="math-discount" type="number" min="0" max="80" step="1" value="50" required inputmode="numeric"><span>%</span></span></label><input id="math-discount-range" type="range" min="0" max="80" step="1" value="50" aria-label="Adjust discount percentage"><span class="math-base-note">of the starting price</span></div>
+                <div class="math-change-field math-increase-field"><label for="math-increase">02 · Add back <span class="math-percent-input"><input id="math-increase" type="number" min="0" max="400" step="1" value="50" required inputmode="numeric"><span>%</span></span></label><input id="math-increase-range" type="range" min="0" max="400" step="1" value="50" aria-label="Adjust increase percentage"><span class="math-base-note">of the discounted price</span></div>
+              </div>
+              <div class="math-form-actions"><p id="math-edit-status" role="status">Make your prediction to unlock your own numbers.</p><button type="submit" class="primary">Try my numbers ↗</button></div>
+            </form>
+            <div class="math-presets" role="group" aria-label="Quick price experiments"><span>Try a twist</span><button type="button" data-math-preset="50,50">50% off · 50% up</button><button type="button" data-math-preset="20,25">20% off · 25% up</button><button type="button" data-math-preset="50,100">Half price · then double</button></div>
+          </section>
           <div class="experiment-stage">
             <div id="experiment-container" class="experiment-container" hidden></div>
-            <div id="prediction-cover" class="prediction-cover"><div id="drop-preview" class="drop-preview" aria-hidden="true"><span class="height-guide">5 m</span><span class="ball ball-a">A</span><span class="ball ball-b">B</span><span class="floor-line"></span></div><div id="idea-preview" class="idea-preview" aria-hidden="true" hidden>?</div><p>Ready when you are.</p><span>Choose a prediction to bring this experiment to life.</span></div>
+            <label id="drop-height-control" class="drop-height-control" for="drop-height" hidden><span class="sr-only">Release height</span><output id="drop-height-value" for="drop-height">5 m</output><input id="drop-height" type="range" min="1" max="10" step="1" value="5" aria-label="Release height" aria-orientation="vertical" aria-describedby="drop-drag-hint"></label>
+            <div id="prediction-cover" class="prediction-cover"><div id="drop-preview" class="drop-preview" aria-hidden="true"><span class="height-guide">5 m</span><span class="ball ball-a">A<small>100 g</small></span><span class="ball ball-b">B<small>1,000 g</small></span><span class="floor-line"></span></div><div id="idea-preview" class="idea-preview" aria-hidden="true" hidden>?</div><p>Ready when you are.</p><span>Choose a prediction to bring this experiment to life.</span></div>
             <div id="frame-error" class="frame-error error" hidden role="alert"></div>
+            <div id="experiment-loading" class="experiment-loading" hidden>
+              <div class="experiment-loading-art" aria-hidden="true"><span></span><span></span><span></span></div>
+              <div role="status" aria-atomic="true"><p class="math-kicker">YOUR NEXT EXPERIMENT</p><h3 id="experiment-loading-title">Building your experiment</h3><p id="experiment-loading-detail">Turning your question into something you can test.</p></div>
+              <p id="experiment-loading-note" class="experiment-loading-note">You can return to your current experiment at any time.</p><button id="experiment-loading-cancel" type="button">Cancel and return</button>
+            </div>
           </div>
+          <p id="experiment-build-error" class="error experiment-build-error" role="alert" hidden></p>
+          <div id="drop-discovery" class="drop-discovery" hidden><p id="drop-drag-hint">↕ Drag the height handle, release, and watch them fall.</p><div class="drop-try" role="group" aria-label="Try another mass comparison"><span>Try next</span><button id="drop-match" type="button">Match their masses</button><button id="drop-swap" type="button">Swap masses ⇄</button></div></div>
+          <section id="math-inspector" class="math-inspector" aria-label="Explore the price changes" hidden><div class="math-inspector-heading"><span class="math-kicker">LOOK CLOSER</span><span id="math-phase" aria-live="off">The final price</span></div><div class="math-stage-buttons" role="group" aria-label="Inspect a calculation step"><button type="button" data-math-stage="0">01 · Starting price</button><button type="button" data-math-stage="0.5">02 · After discount</button><button type="button" data-math-stage="1">03 · After increase</button></div><div id="math-outcome" class="math-outcome"><strong id="math-outcome-amount"></strong><p id="math-outcome-reason"></p></div></section>
           <div class="metrics" id="metrics" aria-label="Experiment measurements"></div><p class="result-summary" id="summary" aria-live="polite">What do you expect to happen?</p>
           <div id="playback-controls" class="playback-controls" hidden aria-label="Experiment playback">
             <button id="playback-toggle" type="button" class="secondary" aria-label="Play animation">▶ Play</button>
@@ -219,6 +97,7 @@
             <button id="reset-conditions" type="button" class="text-button">Reset conditions</button>
             <p class="small-note">Measurements show the final result. Playback changes only the view.</p>
           </div>
+          <div id="drop-moments" class="drop-moments" hidden><div class="drop-moments-heading"><span class="drop-kicker">Jump to a moment</span><output id="drop-clock" aria-label="Elapsed simulation time" aria-live="off">0.00 s</output></div><div class="drop-moment-buttons"><button id="drop-release" type="button">↤ Release</button><button id="drop-landing-a" type="button"></button><button id="drop-landing-b" type="button"></button></div><p id="drop-insight"></p></div>
           <fieldset id="controls" disabled><legend class="sr-only">Experiment controls</legend></fieldset>
           <div class="run-actions"><button type="button" class="primary" id="run" disabled><span aria-hidden="true">▶</span> Run experiment</button><span id="run-status" class="muted">Make a prediction first</span><button id="pin-run" class="secondary" type="button" disabled>Pin for comparison</button></div>
           <details class="assumptions"><summary>Conditions &amp; assumptions</summary><ul id="assumptions"></ul></details>
@@ -235,20 +114,30 @@
       </div>
 
       <aside class="coach panel" aria-label="Your lab partner">
-        <div class="coach-intro"><p id="coach-stage" class="eyebrow">01 / MAKE A PREDICTION</p><h3 id="coach-title">What’s your hunch?</h3><p id="coach-hint">No pressure to be right. This is where discovery starts.</p></div><div class="partner-heading"><div class="partner-avatar" aria-hidden="true"><span></span><span></span><span></span><span></span></div><div><h3>Your lab partner</h3><p id="voice-status" class="small-note">Curious together.</p></div><button id="voice-toggle" type="button" class="voice-button" aria-pressed="false" aria-label="Start live conversation">Start live</button></div>
+        <section id="pending-partner" class="pending-partner" hidden><p class="eyebrow">THE QUESTION WE’RE EXPLORING</p><blockquote id="pending-question"></blockquote><h3>A fresh experiment. A fresh prediction.</h3><p>Once the lab is ready, choose what you think will happen. Then run it and explore the result with your partner.</p></section>
+        <div class="partner-heading"><div class="partner-avatar" aria-hidden="true"><span></span><span></span><span></span><span></span></div><div><h3>Your lab partner</h3><p id="voice-status" class="small-note">Curious together.</p></div><button id="voice-toggle" type="button" class="voice-button" aria-pressed="false" aria-label="Start live conversation">Start live</button></div>
+        <div class="coach-intro"><p id="coach-stage" class="eyebrow">01 / MAKE A PREDICTION</p><h3 id="coach-title">What’s your hunch?</h3><p id="coach-hint">No pressure to be right. This is where discovery starts.</p></div>
+        <div id="prediction-record" class="prediction-record" hidden><p class="eyebrow">YOUR PREDICTION</p><blockquote id="prediction-record-choice"></blockquote><p id="prediction-record-note" class="small-note"></p></div><details id="prediction-details" class="prediction-details" open><summary>Your original prediction</summary><div class="prediction-block"><p class="eyebrow">FIRST, YOUR INTUITION</p><blockquote id="lesson-claim"></blockquote><p id="prediction-prompt"></p><div id="prediction-options" class="choices" aria-label="Predict the result"></div><label class="confidence-label" for="confidence">How sure are you? <output id="confidence-value" for="confidence">50%</output></label><input id="confidence" type="range" min="0" max="100" step="10" value="50"></div></details>
+        <section id="guided-walkthrough" class="guided-walkthrough" aria-label="Guided explanation" hidden>
+          <div class="guide-eyebrow"><span id="guide-count">STEP BY STEP</span><span aria-hidden="true">↗</span></div>
+          <div aria-live="polite" aria-atomic="true"><h4 id="guide-title">See the explanation happen.</h4><p id="guide-narration"></p></div>
+          <p id="guide-source" class="guide-source">Your partner + the experiment</p>
+          <button id="guide-start" type="button" class="primary">Walk me through it →</button>
+          <div id="guide-navigation" class="guide-navigation" hidden><button id="guide-back" type="button" aria-label="Previous explanation step">← Back</button><button id="guide-replay" type="button">↻ Replay step</button><button id="guide-next" type="button">Next step →</button></div>
+          <button id="guide-cancel" type="button" class="text-button" hidden>Cancel walkthrough</button><p id="guide-error" class="error" role="alert" hidden></p>
+        </section>
         <p id="voice-error" class="error" role="alert" hidden></p>
         <details id="transcript-panel" class="transcript-panel" hidden><summary>Live conversation</summary><div id="transcript" role="log" aria-label="Live transcript"></div><p class="small-note">Microphone audio is sent to OpenAI while live. Stop to end the session.</p></details>
-        <div class="prediction-block"><p class="eyebrow">FIRST, YOUR INTUITION</p><blockquote id="lesson-claim"></blockquote><p id="prediction-prompt"></p><div id="prediction-options" class="choices" aria-label="Predict the result"></div><label class="reason-label" for="prediction-reason">What makes you think so? <span>Optional</span></label><textarea id="prediction-reason" rows="2" maxlength="600" placeholder="My reasoning is…"></textarea><label class="confidence-label" for="confidence">How sure are you? <output id="confidence-value" for="confidence">50%</output></label><input id="confidence" type="range" min="0" max="100" step="10" value="50"></div>
         <button type="button" id="run-mobile" class="primary mobile-run" disabled>Test my prediction →</button>
         <section id="explanation" hidden><p class="eyebrow" id="verdict"></p><p id="feedback" class="feedback"></p><p id="explanation-text"></p><p id="conditions-note" class="small-note"></p></section>
         <section id="followup" class="followup" hidden><div class="section-line"><p class="eyebrow">TAKE THE IDEA FURTHER</p><span class="tag" id="followup-source">Built-in question</span></div><p id="reasoning-focus" class="small-note"></p><p id="followup-prompt"></p><div id="followup-options" class="choices" aria-label="Follow-up question"></div><p id="followup-feedback" class="feedback" aria-live="polite"></p><button id="next-question" type="button" class="text-button" hidden>Try another question ↗</button></section>
         <div id="tutor-messages" class="tutor-messages" role="log" aria-label="Lab partner messages"></div><form id="tutor-form" class="tutor-form"><label class="sr-only" for="tutor-message">Ask your lab partner</label><textarea id="tutor-message" rows="2" maxlength="600" placeholder="Ask about what you're seeing…" required></textarea><button id="ask-tutor" type="submit" class="secondary">Ask your partner <span aria-hidden="true">↗</span></button></form><p id="tutor-status" class="small-note" role="status">Make a prediction and run the lab to explore together.</p>
       </aside>
     </div>
-    </section><section class="history" id="history"><div class="section-line"><h3>Your experiment shelf</h3><span class="small-note">Saved in this browser</span></div><div id="history-list"></div></section>
-    <footer><details><summary>About this lab</summary><p>Explore a model. Change a condition. Keep asking questions.</p><span id="connection" class="connection" role="status">Checking API setup…</span></details><span id="lesson-meta">Misconception Lab</span><span>Predict. Test. Rethink.</span></footer>
-    </div>
-    <section id="panel-planner" role="tabpanel" aria-labelledby="tab-planner" hidden>
+    </section></section>
+<section id="screen-shelf" class="flow-screen gallery-shelf" aria-labelledby="shelf-title" hidden><a class="flow-back" href="#choose" data-screen-link="choose"><span aria-hidden="true">←</span> Back to experiments</a><div class="shelf-heading"><p class="flow-eyebrow">KEEP YOUR CURIOSITY GOING</p><p class="flow-intro">Return to a familiar experiment or revisit a question you built.</p></div><section class="history" id="history"><div class="section-line"><h1 id="shelf-title" class="flow-title">Your experiment shelf</h1><span class="small-note">Saved in this browser</span></div><div id="history-list"></div></section>
+    </section></div>
+<section id="panel-planner" role="tabpanel" aria-labelledby="tab-planner" hidden>
       <div class="planner-intro"><p class="eyebrow">START WITH WHAT YOUR STUDENTS THINK</p><h1>One topic. A few good questions.</h1><p class="lede">Bring a teaching brief or a screenshot. Find a belief, then build an experiment around it.</p></div>
       <div class="planner-layout">
         <section class="planner-brief panel" aria-labelledby="brief-heading">
@@ -274,7 +163,8 @@
       </div>
       <section id="planner-results" class="planner-results" hidden aria-labelledby="planner-results-heading"><div class="section-line"><div><p class="eyebrow">02 · CHOOSE A BELIEF TO EXPLORE</p><h2 id="planner-results-heading">Your experiment ideas</h2></div><span class="tag">AI suggestions · editable</span></div><p id="planner-results-context" class="small-note"></p><p class="small-note">These are possible beliefs to investigate. Edit a claim to match your class, then build and check its experiment.</p><div id="misconception-cards"></div></section>
     </section>
-  </main>
+  <footer><details><summary>About this lab</summary><p>Explore a model. Change a condition. Keep asking questions.</p><span id="connection" class="connection" role="status">Checking API setup…</span></details><span id="lesson-meta">Misconception Lab</span><span>Predict. Test. Rethink.</span></footer>
+</main>
   <p class="page-note">Experiments are models with assumptions. Bring your doubts; keep asking questions.</p>
   <dialog id="sketch-dialog"><form method="dialog" class="section-line"><div><p class="eyebrow">THINK WITH YOUR HANDS</p><h2>Sketch your idea</h2></div><button class="text-button" aria-label="Close sketch">✕</button></form><p class="small-note">Draw a diagram, add arrows, or write what you think happens.</p><canvas id="sketch-canvas" width="900" height="500" aria-label="Drawing canvas for your idea"></canvas><div class="sketch-actions"><button id="clear-sketch" type="button" class="secondary">Clear drawing</button><button id="use-sketch" type="button" class="primary">Interpret this sketch ↗</button></div><p id="sketch-error" class="error" hidden role="alert"></p></dialog>
   <div id="preflight-container" class="preflight-container" aria-hidden="true"></div>

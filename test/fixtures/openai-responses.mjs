@@ -19,6 +19,10 @@ export function createFixtureFetcher(){
    const data=JSON.parse(body.input);
    return output({message:`You said: “${data.reason}” The force is greater, but the inertia is greater too. Compare that reasoning with the measured fall times.`,reasoningFocus:'Distinguishing force from acceleration.',question:{prompt:'Two equal-size spheres with different masses are released from rest on the Moon, where air resistance is negligible. Which reaches the ground first?',options:['The heavier sphere','They arrive together','The lighter sphere'],correctIndex:1,feedback:['Compare gravitational force with inertia: both scale with mass.','Correct. The same gravitational acceleration applies to both.','Lower gravity affects both spheres equally.']}});
   }
+  if(name==='experiment_walkthrough'){
+   const {steps}=JSON.parse(body.input);
+   return output({intro:'Controlled narration fixture: follow the selected conditions and compare the calculated outcomes.',steps:steps.map(step=>({id:step.id,narration:`${step.focus.slice(0,260)} Final calculated result: ${step.results.summary.slice(0,210)}${step.progress<1?' This frame shows an earlier visualization position.':''}`}))});
+  }
   const lesson=structuredClone(starter.lesson);
   if(body.instructions.includes('full revised lesson')){
    lesson.title='What if gravity changed?';lesson.controls.push({id:'gravity',label:'Gravity',min:1,max:20,step:1,initial:10,unit:'m/s²'});

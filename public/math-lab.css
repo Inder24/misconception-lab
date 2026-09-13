@@ -1,0 +1,56 @@
+.math-workbench { --money-start:#4268d8; --money-off:#b88317; --money-up:#258579; }
+.math-editor { padding:20px; background:#fff; border-bottom:1px solid #dce4f1; }
+.math-editor-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+.math-kicker { display:block; font-size:10px; font-weight:650; line-height:1.5; letter-spacing:.12em; color:#64748b; }
+.math-editor h3 { margin-top:5px; font-size:20px; line-height:1.3; color:#23314d; }
+.math-receipt-icon { width:38px; height:45px; display:grid; place-items:center; background:#eef3ff; color:#4268d8; border:1px solid #cad7f0; border-radius:4px 4px 12px 4px; font-size:23px; font-weight:650; }
+.math-price-row { display:flex; align-items:center; gap:24px; margin-bottom:18px; }
+.math-price-row>label { display:grid; gap:6px; font-size:12px; color:#52617a; }
+.math-price-input { display:flex; align-items:center; gap:7px; border:1px solid #c9d5e9; background:#f7f9fe; border-radius:9px; padding:6px 12px; font-size:25px; font-weight:650; color:#23314d; }
+.math-price-input>span { color:#8291ab; font-weight:450; }
+.math-price-input input { width:110px; min-width:0; background:transparent; color:inherit; font:inherit; border:0; padding:0; }
+.math-price-row>p { color:#64748b; font-size:12px; line-height:1.7; }
+.math-change-fields { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.math-change-field { padding:12px 14px; border:1px solid #e2dfd4; border-left:3px solid var(--money-off); border-radius:9px; background:#fffcf2; }
+.math-increase-field { border-color:#d5e5df; border-left-color:var(--money-up); background:#f2faf7; }
+.math-change-field label { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:12px; font-weight:650; color:#7b5b18; }
+.math-increase-field label { color:#256e61; }
+.math-percent-input { display:flex; align-items:center; gap:3px; font-size:15px; }
+.math-percent-input input { width:59px; background:#fff; border:1px solid #dddaca; border-radius:5px; padding:4px; color:#23314d; font:inherit; text-align:right; }
+.math-change-field input[type=range] { margin-top:14px; accent-color:var(--money-off); }
+.math-increase-field input[type=range] { accent-color:var(--money-up); }
+.math-base-note { display:block; color:#64748b; font-size:11px; margin-top:6px; }
+.math-form-actions { display:flex; justify-content:space-between; align-items:center; gap:15px; margin-top:16px; }
+.math-form-actions p { color:#64748b; font-size:11px; line-height:1.5; max-width:260px; }
+.math-form-actions .primary { font-size:13px; }
+.math-presets { display:flex; gap:7px; align-items:center; flex-wrap:wrap; border-top:1px solid #e4e9f3; margin-top:16px; padding-top:14px; }
+.math-presets>span { font-size:11px; color:#64748b; }
+.math-presets button,.math-stage-buttons button { background:white; border:1px solid #d5dfef; color:#405875; font-size:11px; padding:8px 9px; min-height:36px; border-radius:7px; }
+.math-presets button[aria-pressed=true] { background:#eef3ff; border-color:#8fa8da; color:#3659ad; }
+.math-workbench #controls { display:none; }
+.math-workbench .experiment-stage,.math-workbench .prediction-cover { min-height:460px; }
+.math-inspector { padding:16px 20px; background:#f7f9fe; border-top:1px solid #dce4f1; }
+.math-inspector-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px; }
+#math-phase { font-size:11px; color:#64748b; }
+.math-stage-buttons { display:flex; gap:8px; }
+.math-stage-buttons button { flex:1; min-height:40px; }
+.math-stage-buttons button[aria-pressed=true] { background:#e8effe; border-color:#91a9db; color:#3659ad; }
+.math-outcome { padding:14px 0 2px; }
+.math-outcome strong { display:block; color:#866313; font-size:18px; font-weight:650; margin-bottom:5px; }
+.math-outcome[data-kind=equal] strong,.math-outcome[data-kind=above] strong { color:#258579; }
+.math-outcome p { font-size:12px; line-height:1.6; color:#64748b; }
+.math-editor :focus-visible,.math-inspector button:focus-visible { outline:3px solid #4268d8; outline-offset:3px; }
+.math-editor label:focus-within { outline:none; }
+.experiment-stage { position:relative; }
+.experiment-loading { position:absolute; z-index:10; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding:32px; text-align:center; background:#111e32f5; color:#eff6ff; backdrop-filter:blur(6px); }
+.experiment-loading .math-kicker { color:#9ebbe3; }
+.experiment-loading h3 { font-size:25px; margin:8px 0 12px; color:#eff6ff; }
+#experiment-loading-detail { font-size:14px; line-height:1.6; color:#c6d5e9; max-width:400px; }
+.experiment-loading-note { font-size:11px; color:#9badc7; }
+.experiment-loading button { border:1px solid #687e9b; background:#213552; color:#edf4ff; padding:10px 16px; border-radius:7px; font-size:13px; }
+.experiment-loading-art { display:flex; align-items:center; gap:7px; height:44px; }
+.experiment-loading-art span { width:9px; height:24px; border-radius:4px; background:#75acff; animation:experiment-pulse 1.2s ease-in-out infinite; }
+.experiment-loading-art span:nth-child(2) { height:40px; background:#f1c460; animation-delay:.15s; }
+.experiment-loading-art span:nth-child(3) { height:30px; background:#76d7ba; animation-delay:.3s; }
+.experiment-build-error { margin:12px 20px; }
+@keyframes experiment-pulse { 0%,100% {opacity:.45;transform:scaleY(.7)} 50% {opacity:1;transform:scaleY(1)} }

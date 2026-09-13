@@ -45,8 +45,9 @@ export async function buildCheckedLesson({endpoint, payload, request, check, sig
       progress('ready', attempt, review.summary || 'Execution checks and model review passed', 'passed');
       return {...candidate, validation:{runtime, review, repairs:attempt, checkedAt:new Date().toISOString(), receipt}};
     }
-    progress('check', attempt, failures.map(x => x.detail).join(' · ') || 'The candidate did not pass checks', 'failed');
-    if (attempt === 2) throw new ExperimentBuildError('This experiment did not pass after two repairs. Try a more specific claim. Your previous experiment is still available.', receipt);
+    const firstFailure=failures[0]?.detail||'The candidate did not pass checks';
+    progress('check', attempt, firstFailure, 'failed');
+    if (attempt === 2) throw new ExperimentBuildError(`This experiment could not finish after two repairs. ${firstFailure.split('; params=')[0].slice(0,400)} Your idea is kept so you can try again.`, receipt);
     abort();
     progress('repair', attempt + 1, `Repair ${attempt + 1} of 2: correcting the observed failures`);
     const evidence = failures.length ? failures.slice(0, 40) : [{name:'Execution',detail:'The test matrix did not pass'}];

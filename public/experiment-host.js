@@ -53,6 +53,7 @@ export class SandboxExperiment{
    if(!params||typeof params!=='object'||Array.isArray(params)||Object.values(params).some(v=>!Number.isFinite(v)))throw Error('Experiment parameters must be finite numbers.');
    const view={width:viewport.width??Math.max(320,Math.round(this.#container.getBoundingClientRect().width)),height:viewport.height??340,progress:viewport.progress??1};
    if(!Number.isFinite(view.width)||view.width<100||view.width>2000||!Number.isFinite(view.height)||view.height<100||view.height>1000||!Number.isFinite(view.progress)||view.progress<0||view.progress>1)throw Error('Invalid experiment viewport.');
+   this.#frame.style.height=view.height+'px';
    const requestId=++this.#sequence;
    return this.#request(requestId,()=>this.#frame.contentWindow.postMessage({type:'render',nonce,requestId,params,viewport:view},'*'),2500,signal);
   };

@@ -7,7 +7,7 @@ export function createPlayback({render,onChange=()=>{},onError=()=>{},duration=3
  if(typeof render!=='function')throw new TypeError('Playback needs a renderer.');
  if(!Number.isFinite(duration)||duration<=0)throw new RangeError('Playback duration must be positive.');
  const state={progress:0,playing:false,speed:1};
- let destroyed=false,epoch=0,timer=null,anchorTime=0,anchorProgress=0;
+ let destroyed=false,epoch=0,timer=null,anchorTime=0,anchorProgress=0,target=1;
  let desired=null,inFlight=null,ticket=0,settledTicket=0;
  const waiters=[];
  const getState=()=>({...state});
@@ -42,24 +42,28 @@ export function createPlayback({render,onChange=()=>{},onError=()=>{},duration=3
   const next=++ticket;desired={progress,epoch,ticket:next};
   const result=waitFor(next);drain();return result;
  }
- function sample(){return Math.min(1,anchorProgress+Math.max(0,now()-anchorTime)*state.speed/duration);}
+ function sample(){return Math.min(target,anchorProgress+Math.max(0,now()-anchorTime)*state.speed/duration);}
  function anchor(){anchorProgress=state.progress;anchorTime=now();}
  function scheduleNext(){
   if(!state.playing||destroyed||timer!==null)return;
   const generation=epoch;
   timer=schedule(()=>{
    timer=null;if(destroyed||!state.playing||generation!==epoch)return;
-   state.progress=sample();if(state.progress>=1)state.playing=false;
+   state.progress=sample();if(state.progress>=target)state.playing=false;
    notify();void frame(state.progress);scheduleNext();
   });
  }
- function play(){
+ function playTo(until){
+  if(!Number.isFinite(until)||until<0||until>1)throw new RangeError('Playback target must be between 0 and 1.');
   if(destroyed)return Promise.resolve(getState());
-  if(state.playing)return waitFor(ticket);
-  if(state.progress>=1)state.progress=0;
+  if(until===0)return seek(0);
+  if(state.playing&&target===until)return waitFor(ticket);
+  if(state.playing){state.progress=sample();stopTimer();epoch++;}
+  target=until;if(state.progress>=target)state.progress=0;
   state.playing=true;anchor();notify();
   const result=frame(state.progress);scheduleNext();return result;
  }
+ const play=()=>playTo(1);
  function pause(){
   if(destroyed||!state.playing)return waitFor(ticket);
   state.progress=sample();state.playing=false;stopTimer();epoch++;notify();
@@ -75,7 +79,7 @@ export function createPlayback({render,onChange=()=>{},onError=()=>{},duration=3
   if(![.25,.5,1,2].includes(speed))throw new RangeError('Playback speed must be .25, .5, 1, or 2.');
   if(destroyed)return Promise.resolve(getState());
   const playing=state.playing;
-  if(playing){state.progress=sample();if(state.progress>=1)state.playing=false;}
+  if(playing){state.progress=sample();if(state.progress>=target)state.playing=false;}
   state.speed=speed;anchor();notify();
   if(!playing)return waitFor(ticket);
   stopTimer();epoch++;
@@ -95,5 +99,5 @@ export function createPlayback({render,onChange=()=>{},onError=()=>{},duration=3
   if(destroyed)return Promise.resolve(inFlight).catch(()=>{}).then(getState);
   const done=invalidate();destroyed=true;notify();return done;
  }
- return {play,pause,seek,setSpeed,reset,destroy,getState};
+ return {play,playTo,pause,seek,setSpeed,reset,destroy,getState};
 }
