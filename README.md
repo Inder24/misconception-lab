@@ -1,66 +1,97 @@
 # Misconception Lab
 
-Turn an everyday belief into an interactive experiment with GPT-6 Astra.
+Turn an everyday belief into an experiment you can challenge with an AI lab partner.
 
-Enter a claim, predict what will happen, explore a visualization with adjustable controls, and answer a follow-up question. Astra generates new experiment JavaScript, questions, explanations, and model assumptions inside a consistent learning interface.
+## Run locally
 
-## Features
-
-- Claim entry with examples across physics, probability, and mathematics.
-- Server-side OpenAI Responses API integration using `gpt-6-astra` and structured outputs.
-- Original generated experiment code, executed in an isolated Web Worker inside a sandboxed iframe.
-- Prediction, replay, adjustable controls, measurements, explanations, and transfer questions.
-- Browser-local shelf for the eight most recent generated lessons.
-- A built-in falling-objects example that works without an API key.
-- Responsive layout and reduced-motion support.
-
-## Quick start
-
-Requires Node.js 22 or later. No package dependencies are needed.
+Requires Node.js 22 or later.
 
 ```sh
+npm install
 npm run dev
 ```
 
-Open the loopback URL printed by the server.
+Open the printed loopback URL. The built-in falling-objects lab works without credentials.
 
-For live generation, configure `OPENAI_API_KEY` in your local environment or an ignored `.env.local` through a secure credential setup flow. The API project must have access to `gpt-6-astra` and available API credits. Credentials are never sent to the browser.
+### Add your API key
+
+Create or open **`.env.local` in the repository root**, beside `package.json`. In the current local checkout, that file is:
+
+```text
+/Users/inder/Documents/Codex/2026-09-13/got-x20/misconception-lab/.env.local
+```
+
+Paste your existing key after the equals sign, replacing the example below:
+
+```dotenv
+OPENAI_API_KEY=your-api-key-here
+```
+
+Save the file, stop the dev server with `Ctrl+C` if it is running, and run `npm run dev` again. The dev command automatically loads `.env.local`; refresh the browser after restarting. The API project needs access to `gpt-6-astra` and `gpt-live-1`.
+
+An existing `OPENAI_API_KEY` environment variable also works and takes precedence over the file. `.env.local` is excluded from Git, and the key stays on the server. Each teammate should create their own local file.
+
+## The five features
+
+- **Test and repair:** candidate JavaScript executes in an isolated browser worker across control boundaries, viewport sizes, and animation positions. Actual failures feed a bounded two-repair loop. A separate Astra review checks scientific consistency. Only a passing candidate replaces the current lesson. An expandable notebook records what happened.
+- **Live lab partner:** GPT-Live-1 uses WebRTC for audio and Responses delegation for seven lab tools. Learners can record a prediction, change controls, run, compare, request a revision, or ask a follow-up by voice. Version checks prevent stale actions; stopping releases the microphone and closes the owned session.
+- **Adaptive follow-up:** questions use the learner's prediction, optional written reasoning, confidence, actual results, and recent conversation. The original prediction remains tied to its original conditions.
+- **Sketch/photo input:** draw in the built-in canvas or upload PNG/JPEG/WebP. The image is decoded/resized locally, interpreted by Astra, and shown with highlighted regions and uncertainty. The proposed claim is editable; edits made while interpretation runs are preserved.
+- **What-if comparisons:** pin a run, change its controls, and compare the recorded outcomes. A requested new capability generates a checked lesson revision while retaining the baseline and its version.
+
+## Focused verification
 
 ```sh
 npm test
 npm run build
 ```
 
-The build produces a self-contained Cloudflare Worker at `dist/server/index.js` with embedded frontend assets and API routes.
+The tests cover the core failure and state boundaries. They substitute only external HTTP or browser media/event boundaries where needed; they do not prove live model access or speech quality.
 
-## Project structure
+For real browser isolation checks, open `/sandbox-check.html` and choose **Run checks**. This harness is excluded from production.
 
-| Path | Purpose |
-| --- | --- |
-| `public/` | Lab UI, lesson contract, built-in example, isolated canvas renderer |
-| `server/api.mjs` | OpenAI Responses API integration and request validation |
-| `scripts/dev.mjs` | Loopback-only development server |
-| `scripts/build.mjs` | Worker build |
-| `test/` | API tests and browser sandbox verification harness |
+For a short full-flow check without API charges:
 
-## Hosting and authentication
+```sh
+npm run verify:browser
+```
 
-The production API expects the trusted `oai-authenticated-user-id` header supplied by private OpenAI Sites dispatch, and checks the request Origin. A different hosting platform requires a trusted server-side authentication integration before enabling generation. The local development server supplies a development identity only while bound to `127.0.0.1`.
+This separate loopback server uses **controlled OpenAI responses**. Its first generated lesson deliberately throws so the real browser execution/repair flow can be checked. It also provides image interpretation, an adaptive question, and a gravity revision. Live voice is deliberately unavailable there. It is a verification fixture, not a demo of live generation.
 
-No existing Site project identifiers, deployment credentials, or API keys are included in this repository. Configure hosting separately and store the production key as a server-side secret.
+Suggested team pass:
 
-## Validation and current status
+1. Predict, explain your hunch, run, then change air resistance.
+2. Pin a baseline and compare; request a new condition such as gravity.
+3. Draw/upload a diagram, correct the suggested claim, and build.
+4. Answer an adapted question, then ask about one of its options.
+5. With a configured key, start voice, interrupt, change a control, and stop. Verify microphone capture stops.
 
-The UI, built-in experiment, and API integration are implemented. Live Astra generation has not yet been verified with an API key. Missing configuration is displayed explicitly; it never silently substitutes a scripted response for a generated lesson.
+## Structure
 
-The six automated API tests cover auth and origin validation, claim validation, missing credentials, the Responses request contract, malformed outputs, refusal, and upstream failure. They stub only the external HTTP boundary and are not evidence of a live API request.
+| Path | Responsibility |
+|---|---|
+| `public/lab.js` | Workbench integration and versioned tool bridge |
+| `public/lab-state.js` | Immutable predictions, parameters, runs and comparisons |
+| `public/lab-pipeline.js` | Build → execute → review → repair workflow |
+| `public/experiment-host.js`, `experiment-checks.js`, `experiment-frame.html` | Isolated execution and actual browser checks |
+| `public/image-input.js`, `lab-ui.js` | Image/sketch input and presentation helpers |
+| `public/live-client.js`, `live-protocol.js` | WebRTC lifecycle, transcripts and delegated tools |
+| `server/learning.mjs` | Astra generation, repair, review, vision and tutoring |
+| `server/live.mjs` | Trusted Live session creation and signed ownership for stop |
+| `scripts/dev.mjs` | Loopback server, validated Host, request cancellation |
+| `scripts/build.mjs` | esbuild bundle with embedded frontend assets |
+| `docs/hackathon-implementation.md` | Architecture, feature contracts and milestones |
 
-For browser checks, open `/sandbox-check.html` on the local development server. Its four checks cover valid rendering, blocked access to the parent DOM, blocked network requests, and timeout of infinite code. This harness is excluded from production builds.
+## Boundaries and deployment
 
-## Model and execution boundaries
+Experiments are educational models, not empirical proof. Execution checks catch runtime/output failures; model review can still miss scientific mistakes. The iframe CSP blocks network access; a worker timeout terminates slow generated code. Generated code cannot access the parent UI or API key. This is not a general-purpose adversarial code hosting service.
 
-Generated code returns bounded canvas drawing primitives and measurements. It cannot access the parent page, browser storage, or the API key. The sandbox CSP blocks network access, and slow computations are terminated. This is an educational POC, not a general-purpose adversarial code-hosting service. Generated models may contain mistakes; assumptions are shown alongside each experiment.
+Lesson history stays in the current browser; URL IDs are local shelf references, not cross-device sharing links. Images and transcripts are not persisted in the shelf.
 
-The built-in example uses a five-metre drop, Earth gravity of 9.81 m/s², and optional equal linear drag of 0.3 kg/s for equal-size spheres. Both masses land in 1.01 seconds in a vacuum; with drag, the 100 g and 1000 g spheres take approximately 1.86 and 1.06 seconds.
+`npm run build` emits a self-contained Cloudflare Worker at `dist/server/index.js`. Production currently expects a trusted `oai-authenticated-user-id` from private OpenAI Sites dispatch and an exact same-origin request. Another hosting platform needs a trusted authentication integration. Do not expose the local developer identity publicly. No deployment credentials or site IDs are included.
 
-Saved lessons stay in the current browser. Lesson URLs identify local shelf entries and are not cross-device sharing links.
+Live sessions use a server-side signed ownership token, with the API key as the signing secret unless `LIVE_SESSION_SECRET` is configured. Key rotation invalidates outstanding stop tokens; configure a stable separate server secret for deployed use. Session duration is bounded by server configuration. Interrupting speech does not inherently cancel backend work; the application separately guards cancellation and stale lesson versions.
+
+## Current verification status
+
+The automated suite/build, real browser sandbox harness, and focused UI flow with controlled remote responses have been verified locally. Real Astra generation, image quality, and live audio remain to be checked after configuring the API key as described above. No claim of live API verification is made.

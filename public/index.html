@@ -1,14 +1,77 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Turn an everyday belief into an interactive experiment with GPT-6 Astra."><title>Misconception Lab</title><link rel="stylesheet" href="/lab.css"><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23245d43'/%3E%3Ctext x='8' y='24' fill='white' font-size='24'%3Eλ%3C/text%3E%3C/svg%3E"></head><body>
-<nav class="studio-nav" aria-label="Lab home"><span class="studio-name">Misconception Lab</span><span class="muted">An interactive learning playground</span></nav>
-<main id="ml-poc"><header><div class="brand"><span class="logo" aria-hidden="true">⚗</span> misconception lab</div><span class="badge" id="connection">Checking Astra connection…</span></header>
-<section class="claim-panel" aria-labelledby="claim-heading"><div class="eyebrow">BRING A BELIEF. LEAVE WITH AN EXPERIMENT.</div><h1 id="claim-heading">What do you think is true?</h1><p class="intro">Turn an everyday intuition into something you can see, change, and question.</p>
-<form id="claim-form"><label class="sr-only" for="claim">Your claim or misconception</label><div class="claim-field"><textarea id="claim" rows="2" maxlength="600" required minlength="8" placeholder="e.g. Summer happens because Earth is closer to the Sun."></textarea><button class="primary" id="generate" type="submit">Build my experiment <span aria-hidden="true">↗</span></button></div></form>
-<div class="examples"><span>Try a belief</span><button type="button" data-example="A coin is more likely to land tails after five heads in a row.">A coin is due for tails</button><button type="button" data-example="Summer happens because Earth is closer to the Sun.">Why summer happens</button><button type="button" data-example="A 50% price drop followed by a 50% rise gets you back to the original price.">Percentages cancel out</button></div>
-<div class="generation" id="generation" hidden role="status"><span class="spinner" aria-hidden="true"></span><div><strong id="generation-title">Astra is designing your experiment…</strong><p id="generation-detail">Checking the claim and writing the visualization.</p></div><button type="button" class="quiet" id="cancel">Cancel</button></div><p id="error" class="error" role="alert" hidden></p>
-</section>
-<div class="lesson-heading"><div><div class="eyebrow" id="domain"></div><h2 id="lesson-title"></h2></div><ol class="steps" aria-label="Learning steps"><li id="step-predict" class="active">01 Predict</li><li id="step-test">02 Explore</li><li id="step-explain">03 Rethink</li></ol></div>
-<div class="layout"><section class="workbench" aria-label="Interactive experiment"><div class="toolbar"><span id="visual-title">Your experiment</span><span class="tag" id="source"></span></div><div id="frame-container"><iframe id="experiment" title="Interactive experiment visualization" sandbox="allow-scripts" referrerpolicy="no-referrer" src="/experiment-frame.html"></iframe><div id="frame-error" class="frame-error" hidden role="alert"></div></div><div class="metrics" id="metrics" aria-label="Experiment measurements"></div><p class="summary" id="summary" aria-live="polite">Make a prediction to start exploring.</p><fieldset id="controls" disabled><legend class="sr-only">Experiment controls</legend></fieldset><div class="actions"><button type="button" class="primary" id="run" disabled>Run experiment ↓</button><span class="muted" id="run-status">Make a prediction first</span></div><details class="assumptions"><summary>What this model assumes</summary><ul id="assumptions"></ul></details></section>
-<aside class="coach"><div class="coach-heading"><h3>Your thinking partner</h3><span class="tag">Predict → test → rethink</span></div><blockquote id="lesson-claim"></blockquote><p id="prediction-prompt"></p><div class="choices" id="prediction-options" aria-label="Predict the result"></div><div id="explanation" hidden><div class="verdict" id="verdict"></div><p class="feedback" id="feedback" aria-live="polite"></p><p id="explanation-text"></p><div class="followup"><span class="eyebrow">TRY THIS NEXT</span><p id="followup-prompt"></p><div class="choices" id="followup-options" aria-label="Follow-up question"></div><p id="followup-feedback" aria-live="polite"></p></div></div></aside></div>
-<section class="history"><div class="history-heading"><h3>Your experiment shelf</h3><span class="muted">Saved in this browser</span></div><div id="history-list"></div></section>
-<footer><span id="lesson-meta"></span><details><summary>Behind the experiment</summary><p>Astra writes new JavaScript for each claim. The code runs in an isolated worker; this frame draws its results.</p><pre id="source-code"></pre></details></footer></main>
-<p class="prototype-note">Generated lessons are exploratory models and may contain mistakes. Check the assumptions and test another condition.</p><script type="module" src="/lab.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="A living laboratory for everyday beliefs. Predict, experiment, and rethink with your AI lab partner.">
+  <title>Misconception Lab · A little doubt. A new discovery.</title>
+  <link rel="stylesheet" href="/lab.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23285f42'/%3E%3Ctext x='8' y='24' fill='white' font-size='24'%3Eλ%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="/" aria-label="Misconception Lab home"><span class="brand-mark" aria-hidden="true">λ</span><span>misconception<span class="brand-light"> lab</span></span></a>
+    <div class="header-right"><span class="header-note">A little doubt. A new discovery.</span><span id="connection" class="connection" role="status">Checking API setup…</span></div>
+  </header>
+  <main>
+    <section class="claim-section" aria-labelledby="claim-heading">
+      <div class="claim-intro"><p class="eyebrow">YOUR CURIOSITY, UNDER THE MICROSCOPE</p><h1 id="claim-heading">Let's put a belief to the test.</h1><p class="lede">Say it, sketch it, or show it. Together, we'll make an experiment.</p></div>
+      <form id="claim-form" class="claim-form">
+        <label class="sr-only" for="claim">Your claim or misconception</label>
+        <textarea id="claim" rows="2" maxlength="600" required minlength="8" placeholder="I think heavier objects always fall faster…"></textarea>
+        <div class="input-actions"><div class="input-tools"><label class="tool-button" for="photo-input"><span aria-hidden="true">▧</span> Add a photo<input id="photo-input" class="sr-only" type="file" accept="image/png,image/jpeg,image/webp"></label><button id="open-sketch" type="button" class="tool-button"><span aria-hidden="true">✎</span> Sketch an idea</button></div><button class="primary" id="generate" type="submit">Build an experiment <span aria-hidden="true">↗</span></button></div>
+      </form>
+      <div class="examples"><span>A place to start</span><button type="button" data-example="A coin is more likely to land tails after five heads in a row.">A coin is due for tails</button><button type="button" data-example="Summer happens because Earth is closer to the Sun.">Why summer happens</button><button type="button" data-example="A 50% price drop followed by a 50% rise gets you back to the original price.">Percentages cancel out</button></div>
+      <section id="visual-input" class="visual-input" hidden aria-label="Your image and interpretation">
+        <div class="image-stage"><img id="image-preview" alt="Your uploaded diagram"><div id="image-regions" class="image-regions"></div></div>
+        <div class="image-interpretation"><div class="section-line"><p class="eyebrow">WHAT WE SEE</p><button id="remove-image" type="button" class="text-button">Remove image</button></div><p id="image-status" role="status">Image ready for interpretation.</p><ul id="image-observations"></ul><p id="image-uncertainty" class="muted"></p><p class="small-note">The interpretation is editable in the claim above. Build when it matches what you meant.</p></div>
+      </section>
+      <div class="generation" id="generation" hidden role="status"><span class="spinner" aria-hidden="true"></span><div><strong id="generation-title">Building your experiment</strong><p id="generation-detail">Designing a test for your claim.</p></div><button type="button" class="text-button" id="cancel">Cancel</button></div>
+      <p id="error" class="error" role="alert" hidden></p>
+    </section>
+
+    <div class="lesson-heading"><div><p class="eyebrow" id="domain">PHYSICS</p><h2 id="lesson-title">Does heavier mean faster?</h2></div><ol class="steps" aria-label="Learning steps"><li id="step-predict" class="active"><span>01</span> Predict</li><li id="step-test"><span>02</span> Experiment</li><li id="step-explain"><span>03</span> Rethink</li></ol></div>
+    <div class="lab-layout">
+      <div class="lab-column">
+        <section class="workbench" aria-label="Interactive experiment">
+          <div class="toolbar"><div><span class="status-dot" aria-hidden="true"></span><span id="visual-title">The experiment</span></div><span id="source" class="tag">Built-in example</span></div>
+          <div class="experiment-stage">
+            <div id="experiment-container" class="experiment-container" hidden></div>
+            <div id="prediction-cover" class="prediction-cover"><div id="drop-preview" class="drop-preview" aria-hidden="true"><span class="height-guide">5 m</span><span class="ball ball-a">A</span><span class="ball ball-b">B</span><span class="floor-line"></span></div><div id="idea-preview" class="idea-preview" aria-hidden="true" hidden>?</div><p>Good science starts with a hunch.</p><span>Make your prediction, then run the experiment.</span></div>
+            <div id="frame-error" class="frame-error error" hidden role="alert"></div>
+          </div>
+          <div class="metrics" id="metrics" aria-label="Experiment measurements"></div><p class="result-summary" id="summary" aria-live="polite">What do you expect to happen?</p>
+          <fieldset id="controls" disabled><legend class="sr-only">Experiment controls</legend></fieldset>
+          <div class="run-actions"><button type="button" class="primary" id="run" disabled><span aria-hidden="true">▶</span> Run experiment</button><span id="run-status" class="muted">Make a prediction first</span><button id="pin-run" class="secondary" type="button" disabled>Pin for comparison</button></div>
+          <details class="assumptions"><summary>Conditions &amp; assumptions</summary><ul id="assumptions"></ul></details>
+        </section>
+
+        <section id="comparison" class="comparison panel" hidden aria-label="What-if comparison">
+          <div class="section-line"><div><p class="eyebrow">CHANGE ONE THING. NOTICE THE DIFFERENCE.</p><h3>Your what-if comparison</h3></div><button id="clear-comparison" class="text-button" type="button">Clear</button></div>
+          <div class="comparison-columns"><div><p class="comparison-label">A <span>Pinned baseline</span></p><p id="baseline-title" class="small-note"></p><div id="baseline-container"></div><div id="baseline-params" class="parameter-list"></div></div><div><p class="comparison-label">B <span>Current conditions</span></p><p id="comparison-status" class="small-note">Change a control above to test another condition.</p><div id="comparison-results"></div><p id="comparison-summary" class="small-note"></p></div></div>
+        </section>
+
+        <section class="whatif panel" aria-labelledby="whatif-heading"><div class="section-line"><div><p class="eyebrow">FOLLOW YOUR NEXT QUESTION</p><h3 id="whatif-heading">“But what if…?”</h3></div><span class="small-note">A new condition. A new experiment.</span></div><form id="whatif-form"><label class="sr-only" for="whatif">A new condition to explore</label><input id="whatif" type="text" minlength="8" maxlength="600" placeholder="What if we could change the planet's gravity?" required><button id="revise" class="secondary" type="submit">Explore this <span aria-hidden="true">↗</span></button></form><p class="small-note">Existing controls update immediately. New ideas are built, tested, and reviewed before they reach the workbench.</p></section>
+
+        <details class="notebook" id="notebook"><summary><span><span class="notebook-icon" aria-hidden="true">≡</span> Experiment notebook</span><span id="check-summary" class="small-note">Built-in reference</span></summary><p class="small-note">Execution checks test the code. Model review checks consistency; neither makes a simulation real-world proof.</p><ol id="receipt"></ol><details class="source-details"><summary>Read the experiment code</summary><pre id="source-code"></pre></details></details>
+      </div>
+
+      <aside class="coach panel" aria-label="Your lab partner">
+        <div class="partner-heading"><div class="partner-avatar" aria-hidden="true"><span></span><span></span><span></span><span></span></div><div><h3>Your lab partner</h3><p id="voice-status" class="small-note">Curious together.</p></div><button id="voice-toggle" type="button" class="voice-button" aria-pressed="false" aria-label="Start live conversation">Start live</button></div>
+        <p id="voice-error" class="error" role="alert" hidden></p>
+        <details id="transcript-panel" class="transcript-panel" hidden><summary>Live conversation</summary><div id="transcript" role="log" aria-label="Live transcript"></div><p class="small-note">Microphone audio is sent to OpenAI while live. Stop to end the session.</p></details>
+        <div class="prediction-block"><p class="eyebrow">FIRST, YOUR INTUITION</p><blockquote id="lesson-claim"></blockquote><p id="prediction-prompt"></p><div id="prediction-options" class="choices" aria-label="Predict the result"></div><label class="reason-label" for="prediction-reason">What makes you think so? <span>Optional</span></label><textarea id="prediction-reason" rows="2" maxlength="600" placeholder="My reasoning is…"></textarea><label class="confidence-label" for="confidence">How sure are you? <output id="confidence-value" for="confidence">50%</output></label><input id="confidence" type="range" min="0" max="100" step="10" value="50"></div>
+        <button type="button" id="run-mobile" class="primary mobile-run" disabled>Test my prediction ↓</button>
+        <section id="explanation" hidden><p class="eyebrow" id="verdict"></p><p id="feedback" class="feedback"></p><p id="explanation-text"></p><p id="conditions-note" class="small-note"></p></section>
+        <section id="followup" class="followup" hidden><div class="section-line"><p class="eyebrow">TAKE THE IDEA FURTHER</p><span class="tag" id="followup-source">Built-in question</span></div><p id="reasoning-focus" class="small-note"></p><p id="followup-prompt"></p><div id="followup-options" class="choices" aria-label="Follow-up question"></div><p id="followup-feedback" class="feedback" aria-live="polite"></p><button id="next-question" type="button" class="text-button" hidden>Try another question ↗</button></section>
+        <div id="tutor-messages" class="tutor-messages" role="log" aria-label="Lab partner messages"></div><form id="tutor-form" class="tutor-form"><label class="sr-only" for="tutor-message">Ask your lab partner</label><textarea id="tutor-message" rows="2" maxlength="600" placeholder="Ask about what you're seeing…" required></textarea><button id="ask-tutor" type="submit" class="secondary">Ask your partner <span aria-hidden="true">↗</span></button></form><p id="tutor-status" class="small-note" role="status">Make a prediction and run the lab to explore together.</p>
+      </aside>
+    </div>
+    <section class="history"><div class="section-line"><h3>Your experiment shelf</h3><span class="small-note">Saved in this browser</span></div><div id="history-list"></div></section>
+    <footer><span id="lesson-meta">Misconception Lab</span><span>Predict. Test. Rethink.</span></footer>
+  </main>
+  <p class="page-note">Experiments are models with assumptions. Bring your doubts; keep asking questions.</p>
+  <dialog id="sketch-dialog"><form method="dialog" class="section-line"><div><p class="eyebrow">THINK WITH YOUR HANDS</p><h2>Sketch your idea</h2></div><button class="text-button" aria-label="Close sketch">✕</button></form><p class="small-note">Draw a diagram, add arrows, or write what you think happens.</p><canvas id="sketch-canvas" width="900" height="500" aria-label="Drawing canvas for your idea"></canvas><div class="sketch-actions"><button id="clear-sketch" type="button" class="secondary">Clear drawing</button><button id="use-sketch" type="button" class="primary">Interpret this sketch ↗</button></div><p id="sketch-error" class="error" hidden role="alert"></p></dialog>
+  <div id="preflight-container" class="preflight-container" aria-hidden="true"></div>
+  <script type="module" src="/lab.js"></script>
+</body>
+</html>

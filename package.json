@@ -5,9 +5,13 @@
   "scripts": {
     "dev": "node --env-file-if-exists=.env.local scripts/dev.mjs",
     "build": "node scripts/build.mjs",
-    "test": "node --test"
+    "test": "node --test test/*.test.mjs",
+    "verify:browser": "node scripts/verify-browser.mjs"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
   }
 }
