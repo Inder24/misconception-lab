@@ -2,6 +2,8 @@
 
 Turn an everyday belief into an experiment you can challenge with an AI lab partner.
 
+Youtube demo : https://youtu.be/SX8zoD2jKO8
+
 ## Run locally
 
 Requires Node.js 22 or later.
