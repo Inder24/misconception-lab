@@ -6,6 +6,8 @@ Turn an everyday belief into an experiment you can challenge with an AI lab part
 
 [Open Misconception Lab](https://misconception-lab.likhariinder.chatgpt.site)
 
+[Watch the demo](https://youtu.be/SX8zoD2jKO8)
+
 Built-in experiments are available to everyone. For AI-powered creation, sketch interpretation, tutoring, and voice, visitors sign in with their own ChatGPT account; they do not need to provide an API key.
 
 ## Why it is different
