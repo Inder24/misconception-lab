@@ -1,0 +1,12 @@
+.guided-walkthrough { padding:20px; border:1px solid #b9caee; border-top:3px solid #4268d8; border-radius:12px; background:#f2f6ff; display:grid; gap:14px; }
+.guide-eyebrow { display:flex; justify-content:space-between; color:#4268d8; font-size:11px; font-weight:700; letter-spacing:.12em; }
+.guide-eyebrow>span:last-child { font-size:18px; }
+.guided-walkthrough h4 { margin:0 0 10px; font-size:22px; line-height:1.25; letter-spacing:-.025em; color:#23314d; }
+#guide-narration { font-size:15px; line-height:1.7; color:#40536f; }
+.guide-source { color:#64748b; font-size:11px; line-height:1.5; }
+.guided-walkthrough .primary { width:100%; font-size:14px; }
+.guide-navigation { display:flex; flex-wrap:wrap; gap:8px; }
+.guide-navigation button { border:1px solid #c8d5ed; border-radius:7px; background:white; padding:8px 10px; min-height:40px; color:#3659ad; font-size:12px; }
+.guide-navigation #guide-next { background:#4268d8; color:white; border-color:#4268d8; flex-grow:1; }
+.guide-navigation button:focus-visible { outline:3px solid #4268d8; outline-offset:3px; }
+.guided-walkthrough .error { font-size:12px; }

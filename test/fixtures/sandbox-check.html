@@ -1,9 +1,26 @@
 <!doctype html><html><head><meta charset="utf-8"><title>Lab sandbox verification</title></head><body><h1>Generated-code isolation checks</h1><button id="start">Run checks</button><ol id="results"></ol><div id="frames"></div><script type="module">
-const cases=[['Valid experiment renders',`return {marks:[{type:'circle',x:60,y:60,r:15,color:'#397453'}],metrics:[],summary:'ok'};`,'result'],['Parent DOM is unavailable',`return {marks:[],metrics:[],summary:parent.document.body.innerText};`,'error'],['Network requests are blocked',`let blocked=false;try{const xhr=new XMLHttpRequest();xhr.open('GET','https://example.com',false);xhr.send();}catch{blocked=true;}return {marks:[],metrics:[],summary:blocked?'blocked':'NETWORK ESCAPED'};`,'blocked'],['Infinite code times out',`while(true){}`,'error']];
-function check(label,code,expected){return new Promise(resolve=>{const iframe=document.createElement('iframe');iframe.sandbox='allow-scripts';iframe.src='/experiment-frame.html';const nonce=crypto.randomUUID();let watchdog;
- const finish=passed=>{clearTimeout(watchdog);removeEventListener('message',receive);iframe.remove();const li=document.createElement('li');li.textContent=(passed?'PASS: ':'FAIL: ')+label;document.querySelector('ol').append(li);resolve();};
- const receive=e=>{if(e.source!==iframe.contentWindow||e.data?.nonce!==nonce)return;if(e.data.type==='ready')iframe.contentWindow.postMessage({type:'render',nonce,params:{},progress:1},'*');else if(e.data.type==='error'||e.data.type==='result')finish(expected==='blocked'?e.data.summary==='blocked':e.data.type===expected);};
- addEventListener('message',receive);iframe.onload=()=>iframe.contentWindow.postMessage({type:'init',nonce,code},'*');document.querySelector('#frames').append(iframe);watchdog=setTimeout(()=>finish(false),5000);
-});}
-document.querySelector('button').onclick=async e=>{e.target.disabled=true;for(const c of cases)await check(...c);e.target.textContent='Checks complete';};
+import {SandboxExperiment} from '/experiment-host.js';
+import {preflightLesson} from '/experiment-checks.js';
+import {starter} from '/starter.js';
+const good=`return {marks:[{type:'circle',x:60,y:60,r:15,color:'#397453'}],metrics:[{label:'Status',value:'Measured'}],summary:'ok'};`;
+const cases=[
+ ['Valid experiment renders',async host=>{await host.load(good);const r=await host.run({},{width:320,height:340,progress:1});return r.summary==='ok'&&r.marks.length===1;}],
+ ['Parent DOM is unavailable',async host=>{await host.load(`return {marks:[],metrics:[{label:'Status',value:'Measured'}],summary:parent.document.body.innerText};`);try{await host.run({});return false;}catch(e){return /runtime/i.test(e.message);}}],
+ ['Network requests are blocked',async host=>{await host.load(`let blocked=false;try{const xhr=new XMLHttpRequest();xhr.open('GET','https://example.com',false);xhr.send();}catch{blocked=true;}return {marks:[],metrics:[{label:'Status',value:'Measured'}],summary:blocked?'blocked':'NETWORK ESCAPED'};`);return (await host.run({})).summary==='blocked';}],
+ ['Infinite code times out and terminates worker',async host=>{await host.load(`while(true){}`);try{await host.run({});return false;}catch(e){return /timed out/i.test(e.message)&&!document.querySelector('#frames iframe');}}],
+ ['Nonfinite drawing output is rejected',async host=>{await host.load(`return {marks:[{type:'circle',x:NaN,y:50,r:20}],metrics:[{label:'Status',value:'Measured'}],summary:'invalid'};`);try{await host.run({});return false;}catch(e){return /nonfinite/i.test(e.message);}}],
+ ['Empty metrics are rejected before review',async host=>{await host.load(`return {marks:[{type:'circle',x:20,y:20,r:10}],metrics:[],summary:'invalid'};`);try{await host.run({});return false;}catch(e){return /metrics/i.test(e.message);}}],
+ ['Invalid mark types are rejected',async host=>{await host.load(`return {marks:[{type:'html',x:10,y:10}],metrics:[{label:'Status',value:'Measured'}],summary:'invalid'};`);try{await host.run({});return false;}catch(e){return /mark type/i.test(e.message);}}],
+ ['Custom viewport and queued requests preserve matching results',async host=>{await host.load(`return {marks:[{type:'circle',x:viewport.width/2,y:50,r:10}],metrics:[{label:'Status',value:'Measured'}],summary:params.n+':'+viewport.width+':'+viewport.progress};`);const r=await Promise.all([host.run({n:1},{width:320,progress:0}),host.run({n:2},{width:720,progress:1})]);return r[0].summary==='1:320:0'&&r[0].marks[0].x===160&&r[1].summary==='2:720:1'&&r[1].marks[0].x===360;}],
+ ['Aborting a run removes its frame and worker',async host=>{await host.load(`while(true){}`);const controller=new AbortController();const pending=host.run({},{},{signal:controller.signal});setTimeout(()=>controller.abort(),30);try{await pending;return false;}catch(e){return e.name==='AbortError'&&!document.querySelector('#frames iframe');}}],
+ ['Result fields cannot spoof frame protocol',async host=>{await host.load(`return {type:'error',requestId:999,nonce:'wrong',marks:[{type:'circle',x:20,y:20,r:10}],metrics:[{label:'Status',value:'Measured'}],summary:'ok'};`);return (await host.run({})).summary==='ok';}],
+ ['Built-in lesson passes real responsive preflight matrix',async host=>{await host.load(starter.lesson.code);const report=await preflightLesson(starter.lesson,(params,viewport,options)=>host.run(params,viewport,options));return report.passed&&report.runs.length>=18;}],
+ ['Built-in vacuum fixture predicts equal measured fall times',async host=>{await host.load(starter.lesson.code);const r=await host.run({mass_a:100,mass_b:1000,air:0},{width:320,progress:1});return r.metrics[0].value===r.metrics[1].value&&r.metrics[0].value==='1.01 s';}],
+ ['Built-in drag fixture changes computed fall times',async host=>{await host.load(starter.lesson.code);const r=await host.run({mass_a:100,mass_b:1000,air:1},{width:720,progress:1});return Number.parseFloat(r.metrics[0].value)>Number.parseFloat(r.metrics[1].value);}],
+];
+document.querySelector('button').onclick=async event=>{
+ event.target.disabled=true;document.querySelector('ol').replaceChildren();let passed=0;
+ for(const [label,check]of cases){const host=new SandboxExperiment(document.querySelector('#frames'));let ok=false,detail='';try{ok=await check(host);}catch(error){detail=' ('+error.message+')';}finally{host.destroy();}passed+=Number(ok);const li=document.createElement('li');li.textContent=(ok?'PASS: ':'FAIL: ')+label+detail;document.querySelector('ol').append(li);}
+ event.target.textContent=`Checks complete: ${passed}/${cases.length}`;document.body.dataset.passed=String(passed===cases.length);
+};
 </script></body></html>

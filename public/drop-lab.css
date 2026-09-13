@@ -1,0 +1,55 @@
+/* A physical drop chamber: blue/gold identify the balls, ink denotes the apparatus. */
+.falling-workbench { --drop-blue:#4268d8; --drop-gold:#b88317; }
+.drop-controls { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:18px 20px; border-bottom:1px solid #e0e6f0; background:white; }
+.drop-kicker { display:block; font-size:10px; line-height:1.4; font-weight:650; letter-spacing:.12em; text-transform:uppercase; color:#64748b; }
+.drop-environment { display:grid; gap:8px; }
+.drop-switch { display:flex; padding:3px; gap:4px; background:#eef2f8; border-radius:10px; }
+.drop-switch button { display:grid; gap:2px; padding:9px 16px; min-height:48px; border:1px solid transparent; border-radius:8px; background:transparent; color:#52617a; font-size:14px; line-height:1.3; font-weight:600; }
+.drop-switch button span { font-size:11px; font-weight:400; }
+.drop-switch button[aria-pressed=true] { background:white; border-color:#cfdaee; color:#2a4ea9; box-shadow:0 2px 4px #23314d0a; }
+.drop-fair-test { display:flex; align-items:center; gap:10px; font-size:11px; line-height:1.5; color:#64748b; }
+.drop-fair-test strong { color:#23314d; font-weight:550; }
+.drop-pair { display:flex; gap:5px; }
+.drop-pair i { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:var(--drop-blue); color:white; font:600 11px/1 sans-serif; font-style:normal; }
+.drop-pair i+i { background:var(--drop-gold); }
+.falling-workbench .experiment-stage { position:relative; min-height:460px; background:#fbfcff; }
+.falling-workbench .prediction-cover { height:460px; }
+.falling-workbench .prediction-cover .drop-preview { height:175px; margin-bottom:10px; }
+.falling-workbench .drop-preview .ball { width:48px; height:48px; }
+.falling-workbench .drop-preview small { position:absolute; top:56px; left:50%; transform:translateX(-50%); white-space:nowrap; color:#52617a; font-size:12px; font-weight:600; }
+.drop-height-control { position:absolute; inset:0 auto auto 12px; width:28px; height:365px; }
+.drop-height-control:focus-within { outline:none; }
+.drop-height-control output { position:absolute; top:65px; left:-5px; width:38px; padding:4px 0; border-radius:5px; text-align:center; color:#2a4ea9; background:#eaf0ff; font-size:12px; font-weight:650; font-variant-numeric:tabular-nums; }
+.drop-height-control input[type=range] { position:absolute; top:100px; left:0; width:28px; height:253px; writing-mode:vertical-lr; direction:rtl; appearance:none; background:transparent; touch-action:none; }
+.drop-height-control input::-webkit-slider-runnable-track { width:3px; border-radius:4px; background:#c8d4eb; }
+.drop-height-control input::-webkit-slider-thumb { appearance:none; width:24px; height:24px; margin-left:-10.5px; border:5px solid white; border-radius:50%; background:#4268d8; box-shadow:0 0 0 1px #7c98d9,0 2px 5px #23314d26; cursor:ns-resize; }
+.drop-height-control input::-moz-range-track { width:3px; border-radius:4px; background:#c8d4eb; }
+.drop-height-control input::-moz-range-thumb { width:14px; height:14px; border:5px solid white; border-radius:50%; background:#4268d8; box-shadow:0 0 0 1px #7c98d9; cursor:ns-resize; }
+.drop-height-control input:disabled { opacity:.45; }
+.drop-discovery { padding:12px 20px 16px; background:#f3f6fc; border-top:1px solid #e0e6f0; }
+.drop-discovery>p { font-size:12px; color:#64748b; }
+.drop-try { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.drop-try>span { color:#64748b; font-size:11px; margin-right:2px; }
+.drop-try button,.drop-moment-buttons button { background:white; border:1px solid #d7e0ee; border-radius:7px; min-height:36px; padding:7px 10px; color:#334c7b; font-size:12px; font-weight:550; }
+.drop-try button:hover:not(:disabled),.drop-moment-buttons button:hover:not(:disabled) { border-color:#7592d3; background:#edf2ff; }
+.drop-moments { padding:16px 20px; border-top:1px solid #e0e6f0; }
+.drop-moments-heading { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.drop-moments-heading output { font-size:14px; font-weight:600; color:#23314d; font-variant-numeric:tabular-nums; }
+.drop-moment-buttons { display:flex; gap:8px; flex-wrap:wrap; }
+.drop-moment-buttons button[aria-pressed=true] { border-color:#8fa7de; background:#edf2ff; }
+#drop-landing-a { color:#3659b5; } #drop-landing-b { color:#936714; }
+#drop-insight { margin-top:12px; font-size:13px; line-height:1.6; color:#52617a; }
+.falling-workbench #controls label:has(#control-air),.falling-workbench #controls label:has(#control-height) { display:none; }
+.falling-workbench #controls label:has(#control-mass_a) { border-left:3px solid var(--drop-blue); padding-left:12px; }
+.falling-workbench #controls label:has(#control-mass_b) { border-left:3px solid var(--drop-gold); padding-left:12px; }
+.falling-workbench #control-mass_a { accent-color:var(--drop-blue); } .falling-workbench #control-mass_b { accent-color:var(--drop-gold); }
+.falling-workbench button:focus-visible,.drop-height-control input:focus-visible { outline:3px solid #4268d8; outline-offset:4px; }
+@media(max-width:500px) {
+  .drop-controls { padding:14px; gap:8px; flex-wrap:wrap; }
+  .drop-fair-test { gap:7px; }
+  .drop-switch button { padding:8px 12px; }
+  .drop-discovery,.drop-moments { padding:12px 14px; }
+  .drop-try button,.drop-moment-buttons button { min-height:42px; }
+  .falling-workbench .prediction-cover>p { font-size:22px; }
+  .drop-fair-test { margin-top:4px; }
+}
