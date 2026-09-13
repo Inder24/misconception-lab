@@ -1,3 +1,4 @@
+import {newtonCradle} from './newton-cradle.js';
 import {setupDebugPanel,traceRequest} from './debug-panel.js';
 import {starter} from './starter.js';
 import {validateLesson} from './lesson-schema.js';
@@ -35,7 +36,7 @@ function setActions(){
   const busy=Boolean(buildController)||imageBusy||loading||plannerBusy||conditionPending;
   $('generate').disabled=busy||tutorBusy;$('revise').disabled=busy||tutorBusy;$('claim').disabled=Boolean(buildController);
   $('run').disabled=busy||(!state.prediction&&selected===null);
-  $('run-mobile').disabled=$('run').disabled;text('run-mobile',hasRun?'Replay experiment →':'Test my prediction →');$('try-starter').disabled=busy||tutorBusy;
+  $('run-mobile').disabled=$('run').disabled;text('run-mobile',hasRun?'Replay experiment →':'Test my prediction →');$('try-starter').disabled=busy||tutorBusy;$('try-cradle').disabled=busy||tutorBusy;
   $('controls').disabled=busy||!hasRun;
   $('pin-run').disabled=busy||!state.results;
   $('ask-tutor').disabled=busy||tutorBusy||!state.results;
@@ -74,7 +75,7 @@ function renderControls(){
       playback.reset().then(()=>{
         if(token!==controlEpoch||!sameIdentity(identity,state.identity))return;
         state.setParams(patch);clearChangedResult();text('run-status','Conditions changed');renderComparison(state);setActions();syncVoice();
-        controlTimer=setTimeout(()=>runCurrent({animate:false,automaticTutor:false}).catch(handleRunError),100);
+        controlTimer=setTimeout(()=>runCurrent({animate:state.envelope.id==='curated-newton-cradle',automaticTutor:false}).catch(handleRunError),100);
       }).catch(error=>showError(error.message)).finally(()=>{if(token===controlEpoch){conditionPending=false;setActions();}});
     });
   }
@@ -298,3 +299,5 @@ fetch('/api/status').then(r=>r.json()).then(data=>{apiReady=Boolean(data.ready);
 $('try-starter').addEventListener('click',()=>loadLesson(starter).then(()=>{$('lesson-title').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}).catch(error=>showError(error.message)));
 
 for(const link of document.querySelectorAll('.site-header nav a'))link.addEventListener('click',()=>showWorkspace('experiment'));
+
+$('try-cradle').addEventListener('click',async()=>{try{const result=await openStarter(newtonCradle,{});if(result?.ok){showWorkspace('experiment');$('lesson-title').scrollIntoView({behavior:'smooth',block:'start'});}}catch(error){showError(error.message);}});

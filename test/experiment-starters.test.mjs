@@ -6,8 +6,8 @@ import {preflightLesson,validateExperimentResult} from '../public/experiment-che
 const view={width:720,height:340,progress:1};
 const values=result=>Object.fromEntries(result.metrics.map(m=>[m.label,m.value]));
 test('curated lessons are complete compatible envelopes with honest catalog metadata',()=>{
- assert.equal(experimentStarters.length,2);assert.equal(new Set(experimentStarters.map(x=>x.id)).size,2);
- for(const item of experimentStarters){assert.ok(validateLesson(item.lesson));assert.equal(item.source,'curated');assert.equal(item.version,1);assert.ok(item.catalog.topic&&item.catalog.grade&&item.catalog.tags.length);assert.equal(item.validation,undefined);}
+ assert.equal(experimentStarters.length,3);assert.equal(new Set(experimentStarters.map(x=>x.id)).size,3);
+ for(const item of experimentStarters){assert.ok(validateLesson(item.lesson));assert.equal(item.source,'curated');assert.ok(Number.isInteger(item.version)&&item.version>=1);assert.ok(item.catalog.topic&&item.catalog.grade&&item.catalog.tags.length);assert.equal(item.validation,undefined);}
 });
 test('buoyancy computes floating equilibrium and fully submerged sinking forces independently',()=>{
  const floating=values(buoyancyExperiment({object_density:500,fluid_density:1000,volume:1},view));

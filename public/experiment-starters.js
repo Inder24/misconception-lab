@@ -1,3 +1,4 @@
+import {newtonCradle} from './newton-cradle.js';
 // Original, hand-authored reference models. These pure functions are tested
 // directly; their source is packaged for the same isolated worker as AI lessons.
 export function buoyancyExperiment(params,viewport){
@@ -89,4 +90,5 @@ export const experimentStarters=[
   prediction:{prompt:'A 3 cm object is 30 cm from a converging lens of focal length 10 cm. What image forms?',options:['Larger and upright','Smaller and inverted','No image can form'],correctIndex:1,feedback:['This object is beyond twice the focal length. Its image is real, smaller, and inverted.','Yes. The image forms 15 cm away with magnification −0.5 and height −1.5 cm.','A finite real image forms because the object is beyond the focal plane.']},
   followup:{prompt:'Move the object to 5 cm while the focal length stays 10 cm. What changes?',options:['The image stays real and inverted','The image becomes virtual, upright, and larger'],correctIndex:1,feedback:['Inside the focal length, emerging rays diverge. Their backward extensions meet on the object side.','Yes. The virtual image is 10 cm on the object side, with magnification +2.']},code:`return (${lensExperiment.toString()})(params, viewport);`
  }}
+,newtonCradle
 ];

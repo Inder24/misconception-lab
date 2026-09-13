@@ -1540,3 +1540,12 @@ main{max-width:1240px;margin:auto;padding:0 32px}.page-note{padding:0 32px}
 @media(min-width:1200px){body.debug-open main{padding:0 24px}body.debug-open .claim-panel{gap:26px}body.debug-open h1{font-size:44px}body.debug-open .lab-layout{grid-template-columns:minmax(260px,.85fr) minmax(0,1.2fr)}body.debug-open .lesson-section{padding:18px}body.debug-open .coach{padding:18px}body.debug-open .challenge-icon{display:none}}
 @media(max-width:1000px){.lab-layout{grid-template-columns:minmax(275px,.85fr) minmax(0,1.2fr)}.site-header{gap:18px}.claim-panel{gap:24px}.planner-layout{grid-template-columns:1fr}.starter-library #starter-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.planner-intro h1{font-size:38px}.planner-brief>.section-line{flex-wrap:wrap}.question-card{padding:22px}.lesson-section{padding:20px}.examples .challenge-icon{display:none}}
 @media(max-width:760px){main{padding:0 20px}.site-header{padding:18px 20px}.site-header nav{gap:14px;margin-left:0}.site-header nav a{font-size:13px}.claim-panel{padding-top:28px;gap:26px}.hero-copy h1{font-size:44px}.question-card label{font-size:22px}.workspace-tabs{width:100%;margin-top:18px}.workspace-tabs [role=tab]{flex:1;padding:10px 12px}.examples .challenge-icon{display:block}.lesson-section{margin:0 -8px;padding:20px 12px}.lesson-heading h2{font-size:27px}.lab-layout{display:flex}.coach{padding:20px}.coach-intro h3{font-size:23px}.toolbar{flex-wrap:wrap}.prediction-cover{height:340px}.planner-intro h1{font-size:36px}.planner-brief{padding:20px}.brief-row{grid-template-columns:1fr}.starter-library #starter-cards,#misconception-cards{grid-template-columns:1fr}.page-note{padding:0 20px}.run-actions .primary{width:100%}.primary{white-space:normal}.generation{position:static!important}.planner-form-actions{flex-wrap:wrap}.history .section-line{flex-wrap:wrap}.playback-controls .small-note{width:100%}}
+
+/* A gentle invitation to lift the first ball; the outcome stays unrevealed. */
+.challenge-card.cradle{background:#e9effc;border-color:#cbd8f1;color:#254878}
+.cradle-preview{width:80px;flex-shrink:0}
+.cradle-preview svg{width:80px;height:76px;overflow:visible}
+.cradle-lift{transform-origin:28px 14px;transform:rotate(24deg)}
+.challenge-card.cradle:hover .cradle-lift,.challenge-card.cradle:focus-visible .cradle-lift{animation:cradle-invitation 1.8s ease-in-out infinite}
+@keyframes cradle-invitation{0%,100%{transform:rotate(18deg)}50%{transform:rotate(34deg)}}
+@media(prefers-reduced-motion:reduce){.challenge-card.cradle .cradle-lift{animation:none!important}}
