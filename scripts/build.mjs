@@ -16,4 +16,6 @@ export default {async fetch(request,env){
  return new Response(request.method==='HEAD'?null:body,{headers:{'content-type':type+'; charset=utf-8','x-content-type-options':'nosniff','cache-control':'no-cache','referrer-policy':'no-referrer'}});
 }};`;
 await build({stdin:{contents:entry,resolveDir:process.cwd(),sourcefile:'worker-entry.mjs'},bundle:true,format:'esm',platform:'browser',target:'es2022',outfile:'dist/server/index.js'});
+const hosting=await readFile('.openai/hosting.json','utf8').catch(error=>{if(error.code==='ENOENT')return null;throw error;});
+if(hosting){await mkdir('dist/.openai',{recursive:true});await writeFile('dist/.openai/hosting.json',hosting);}
 console.log(`Built Worker with API and ${Object.keys(assets).length} frontend assets.`);

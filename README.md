@@ -143,7 +143,11 @@ Experiments are educational models, not empirical proof. Execution checks catch 
 
 Lesson history stays in the current browser; URL IDs are local shelf references, not cross-device sharing links. Images and transcripts are not persisted in the shelf.
 
-`npm run build` emits a self-contained Cloudflare Worker at `dist/server/index.js`. Production currently expects a trusted `oai-authenticated-user-id` from private OpenAI Sites dispatch and an exact same-origin request. Another hosting platform needs a trusted authentication integration. Do not expose the local developer identity publicly. No deployment credentials or site IDs are included.
+The Sites address is [misconception-lab.likhariinder.chatgpt.site](https://misconception-lab.likhariinder.chatgpt.site). It is initially private to the owner and requires ChatGPT sign-in. Manage teammate access through Sites sharing settings.
+
+For the hosted app, set `OPENAI_API_KEY` as a **secret** in the Site's runtime environment variables, then deploy a saved version to apply the change. `.env.local` is only for local development; it is never bundled or uploaded. The existing key is configured for the initial Sites deployment. Keep API keys out of `.openai/hosting.json`, frontend code, and Git.
+
+`npm run build` emits a self-contained Cloudflare Worker at `dist/server/index.js` and copies the Site manifest to `dist/.openai/hosting.json`. The source manifest records the existing Site so later deployments reuse it. Production expects a trusted `oai-authenticated-user-id` from private OpenAI Sites dispatch and an exact same-origin request. Another hosting platform needs a trusted authentication integration. Do not expose the local developer identity publicly.
 
 Live sessions use a server-side signed ownership token, with the API key as the signing secret unless `LIVE_SESSION_SECRET` is configured. Key rotation invalidates outstanding stop tokens; configure a stable separate server secret for deployed use. Session duration is bounded by server configuration. Interrupting speech does not inherently cancel backend work; the application separately guards cancellation and stale lesson versions.
 
