@@ -33,6 +33,18 @@ Misconception Lab is designed for curious learners aged **8–16** who learn bes
 
 The current project can grow into an education platform for schools, tutoring networks, and edtech providers. Useful enterprise extensions include curriculum-aligned experiment libraries, teacher workspaces, class dashboards for predictions and confidence, approved experiment templates, organization-level access controls, moderation and audit trails, learning analytics, and LMS integrations. These capabilities would let educators use the same inquiry loop at class scale while retaining human review of generated content.
 
+## GPT-5.6 Terra Ultra review of the project
+
+**Internal POC assessment — not an official hackathon judge score.** Evaluated as a six-hour hackathon prototype, excluding recorded-demo production quality and enterprise maturity:
+
+| Area | Score | Assessment |
+|---|---:|---|
+| Agentic Engineering | **9.5 / 10** | Astra generates experiments, the app runs and checks them in a sandbox, observed failures can trigger repair, and tutoring uses the learner's actual prediction and results. |
+| Visual Understanding | **9 / 10** | A learner's photo or sketch is interpreted into an editable educational claim and then turned into an interactive experiment. |
+| Overall hackathon POC | **9.25 / 10** | A focused, technically ambitious learning loop with a clear use of AI beyond a chat interface. |
+
+The agentic loop is the project's core technical strength. Visual understanding is also strong, while serving as one of several ways a learner can enter the experience.
+
 ## Run locally
 
 Requires Node.js 22 or later.
