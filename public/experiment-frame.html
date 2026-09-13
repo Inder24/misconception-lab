@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; worker-src blob:; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; media-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"><style>*{box-sizing:border-box}body{margin:0;background:#fcfdf9}canvas{display:block;width:100%;height:340px}</style></head><body><canvas aria-label="Interactive experiment visualization" role="img"></canvas><script>
+(()=>{
+ const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');let worker,nonce,job=0,pending=false,timer,started=false,queued=null;
+ const safeNumber=(n,lo=-2000,hi=4000)=>typeof n==='number'&&Number.isFinite(n)&&n>=lo&&n<=hi;
+ const color=c=>typeof c==='string'&&/^#[0-9a-f]{3,8}$/i.test(c)?c:'#315b46';
+ const send=(type,extra={})=>parent.postMessage({type,nonce,...extra},'*');
+ function compute(d){pending=true;job++;timer=setTimeout(()=>fail('The experiment took too long to run. Try generating again.'),1500);worker.postMessage({id:job,params:d.params,viewport:{width:innerWidth,height:340,progress:d.progress}});}
+ function fail(message){queued=null;clearTimeout(timer);worker?.terminate();pending=false;send('error',{message});}
+ function draw(result){
+  if(!result||!Array.isArray(result.marks)||result.marks.length>300)throw Error();
+  const ratio=Math.min(devicePixelRatio||1,2),w=innerWidth;canvas.width=w*ratio;canvas.height=340*ratio;ctx.setTransform(ratio,0,0,ratio,0,0);ctx.fillStyle='#fcfdf9';ctx.fillRect(0,0,w,340);
+  ctx.strokeStyle='#e9eee3';ctx.lineWidth=1;for(let x=0;x<w;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,340);ctx.stroke();}for(let y=0;y<340;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+  for(const m of result.marks){
+   if(!m||typeof m!=='object')continue;
+   ctx.fillStyle=color(m.color);ctx.strokeStyle=color(m.color);ctx.lineWidth=safeNumber(m.width,1,10)?m.width:2;
+   if(m.type==='polyline'&&Array.isArray(m.points)&&m.points.length<=500){ctx.beginPath();let first=true;for(const p of m.points){if(!p||!safeNumber(p.x)||!safeNumber(p.y))continue;first?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y);first=false;}ctx.stroke();continue;}
+   if(!safeNumber(m.x)||!safeNumber(m.y))continue;
+   if(m.type==='circle'&&safeNumber(m.r,0,1000)){ctx.beginPath();ctx.arc(m.x,m.y,m.r,0,Math.PI*2);ctx.fill();}
+   if(m.type==='rect'&&safeNumber(m.w,0,2000)&&safeNumber(m.h,0,2000))ctx.fillRect(m.x,m.y,m.w,m.h);
+   if(m.type==='line'&&safeNumber(m.x2)&&safeNumber(m.y2)){ctx.beginPath();ctx.moveTo(m.x,m.y);ctx.lineTo(m.x2,m.y2);ctx.stroke();}
+   if(m.type==='text'&&typeof m.text==='string'){ctx.font=`${safeNumber(m.size,12,36)?m.size:16}px system-ui,sans-serif`;ctx.textAlign=['left','center','right'].includes(m.align)?m.align:'left';ctx.fillText(m.text.slice(0,160),m.x,m.y);}
+  }
+  const metrics=Array.isArray(result.metrics)?result.metrics.slice(0,4).filter(m=>m&&typeof m.label==='string'&&typeof m.value==='string').map(m=>({label:m.label.slice(0,80),value:m.value.slice(0,100)})):[];
+  const summary=typeof result.summary==='string'?result.summary.slice(0,600):'Experiment updated.';canvas.setAttribute('aria-label',summary);send('result',{metrics,summary});
+ }
+ addEventListener('message',event=>{
+  if(event.source!==parent||!event.data||typeof event.data!=='object')return;
+  const d=event.data;
+  if(d.type==='init'&&!started&&typeof d.code==='string'&&d.code.length<=16000&&typeof d.nonce==='string'){
+   started=true;nonce=d.nonce;
+   const workerSource=`let experiment;onmessage=e=>{try{if(e.data.type==='init'){experiment=new Function('params','viewport',e.data.code);postMessage({ready:true});return;} const result=experiment(e.data.params,e.data.viewport);const json=JSON.stringify(result);if(json.length>100000)throw Error();postMessage({id:e.data.id,json});}catch{postMessage({error:true});}};`;
+   const url=URL.createObjectURL(new Blob([workerSource],{type:'text/javascript'}));worker=new Worker(url);URL.revokeObjectURL(url);
+   worker.onerror=()=>fail('The generated experiment could not run. Try generating again.');
+   worker.onmessage=e=>{
+    if(e.data?.ready){clearTimeout(timer);send('ready');return;}
+    if(!pending)return;
+    if(e.data?.error){fail('The generated experiment hit a runtime error. Try generating again.');return;}
+    if(e.data?.id!==job||typeof e.data.json!=='string')return;
+    clearTimeout(timer);pending=false;
+    if(e.data.json.length>100000){fail('This experiment exceeded the drawing limit.');return;}
+    try{draw(JSON.parse(e.data.json));if(queued){const next=queued;queued=null;compute(next);}}catch{fail('The generated experiment returned invalid drawing data. Try generating again.');}
+   };
+   timer=setTimeout(()=>fail('The experiment took too long to initialize.'),2000);
+   worker.postMessage({type:'init',code:d.code});
+  }
+  if(d.type==='render'&&d.nonce===nonce&&worker){if(pending)queued=d;else compute(d);}
+ });
+})();
+</script></body></html>
