@@ -5,7 +5,7 @@ import {handleAPI} from '../server/api.mjs';
 
 // Exported so browser integration tests exercise the production UI/API with only
 // the remote HTTP boundary substituted. The normal dev command always uses fetch.
-export function createDevServer({env=process.env,fetcher=fetch}={}){
+export function createDevServer({env=process.env,fetcher=fetch,transformHTML}={}){
  const server=http.createServer(async(req,res)=>{
   const port=server.address()?.port;
   if(![`127.0.0.1:${port}`,`localhost:${port}`].includes(req.headers.host)){
@@ -25,7 +25,7 @@ export function createDevServer({env=process.env,fetcher=fetch}={}){
     if(!/^\/[a-z0-9.-]+$/.test(path))response=new Response('Not found',{status:404});
     else{
      const fixture=['/sandbox-check.html','/flow-check.html'].includes(path);
-     try{const body=await readFile(new URL(fixture?'../test/fixtures'+path:'../public'+path,import.meta.url));response=new Response(body,{headers:{'content-type':path.endsWith('.js')?'text/javascript; charset=utf-8':path.endsWith('.css')?'text/css; charset=utf-8':'text/html; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}});}catch{response=new Response('Not found',{status:404});}
+     try{let body=await readFile(new URL(fixture?'../test/fixtures'+path:'../public'+path,import.meta.url));if(path==='/index.html'&&transformHTML)body=transformHTML(body.toString());response=new Response(body,{headers:{'content-type':path.endsWith('.js')?'text/javascript; charset=utf-8':path.endsWith('.css')?'text/css; charset=utf-8':'text/html; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'}});}catch{response=new Response('Not found',{status:404});}
     }
    }
    if(res.destroyed)return;

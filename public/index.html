@@ -5,6 +5,7 @@
   <meta name="description" content="A living laboratory for everyday beliefs. Predict, experiment, and rethink with your AI lab partner.">
   <title>Misconception Lab · A little doubt. A new discovery.</title>
   <link rel="stylesheet" href="/lab.css">
+  <link rel="stylesheet" href="/planner.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23285f42'/%3E%3Ctext x='8' y='24' fill='white' font-size='24'%3Eλ%3C/text%3E%3C/svg%3E">
 </head>
 <body>
@@ -13,6 +14,13 @@
     <div class="header-right"><span class="header-note">A little doubt. A new discovery.</span><span id="connection" class="connection" role="status">Checking API setup…</span></div>
   </header>
   <main>
+    <div class="workspace-tabs" role="tablist" aria-label="Lab workspace">
+      <button id="tab-experiment" type="button" role="tab" aria-selected="true" aria-controls="panel-experiment">Experiment</button>
+      <button id="tab-planner" type="button" role="tab" aria-selected="false" aria-controls="panel-planner" tabindex="-1">Plan a lesson <span aria-hidden="true">↗</span></button>
+    </div>
+    <div class="generation" id="generation" hidden role="status"><span class="spinner" aria-hidden="true"></span><div><strong id="generation-title">Building your experiment</strong><p id="generation-detail">Designing a test for your claim.</p></div><button type="button" class="text-button" id="cancel">Cancel</button></div>
+    <p id="error" class="error" role="alert" hidden></p>
+    <div id="panel-experiment" role="tabpanel" aria-labelledby="tab-experiment">
     <section class="claim-section" aria-labelledby="claim-heading">
       <div class="claim-intro"><p class="eyebrow">YOUR CURIOSITY, UNDER THE MICROSCOPE</p><h1 id="claim-heading">Let's put a belief to the test.</h1><p class="lede">Say it, sketch it, or show it. Together, we'll make an experiment.</p></div>
       <form id="claim-form" class="claim-form">
@@ -25,8 +33,6 @@
         <div class="image-stage"><img id="image-preview" alt="Your uploaded diagram"><div id="image-regions" class="image-regions"></div></div>
         <div class="image-interpretation"><div class="section-line"><p class="eyebrow">WHAT WE SEE</p><button id="remove-image" type="button" class="text-button">Remove image</button></div><p id="image-status" role="status">Image ready for interpretation.</p><ul id="image-observations"></ul><p id="image-uncertainty" class="muted"></p><p class="small-note">The interpretation is editable in the claim above. Build when it matches what you meant.</p></div>
       </section>
-      <div class="generation" id="generation" hidden role="status"><span class="spinner" aria-hidden="true"></span><div><strong id="generation-title">Building your experiment</strong><p id="generation-detail">Designing a test for your claim.</p></div><button type="button" class="text-button" id="cancel">Cancel</button></div>
-      <p id="error" class="error" role="alert" hidden></p>
     </section>
 
     <div class="lesson-heading"><div><p class="eyebrow" id="domain">PHYSICS</p><h2 id="lesson-title">Does heavier mean faster?</h2></div><ol class="steps" aria-label="Learning steps"><li id="step-predict" class="active"><span>01</span> Predict</li><li id="step-test"><span>02</span> Experiment</li><li id="step-explain"><span>03</span> Rethink</li></ol></div>
@@ -40,6 +46,13 @@
             <div id="frame-error" class="frame-error error" hidden role="alert"></div>
           </div>
           <div class="metrics" id="metrics" aria-label="Experiment measurements"></div><p class="result-summary" id="summary" aria-live="polite">What do you expect to happen?</p>
+          <div id="playback-controls" class="playback-controls" hidden aria-label="Experiment playback">
+            <button id="playback-toggle" type="button" class="secondary" aria-label="Play animation">▶ Play</button>
+            <label class="playback-track" for="playback-progress">Animation <output id="playback-position" for="playback-progress">100%</output><input id="playback-progress" type="range" min="0" max="100" step="1" value="100"></label>
+            <label class="playback-speed" for="playback-speed">Speed<select id="playback-speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+            <button id="reset-conditions" type="button" class="text-button">Reset conditions</button>
+            <p class="small-note">Measurements show the final result. Playback changes only the view.</p>
+          </div>
           <fieldset id="controls" disabled><legend class="sr-only">Experiment controls</legend></fieldset>
           <div class="run-actions"><button type="button" class="primary" id="run" disabled><span aria-hidden="true">▶</span> Run experiment</button><span id="run-status" class="muted">Make a prediction first</span><button id="pin-run" class="secondary" type="button" disabled>Pin for comparison</button></div>
           <details class="assumptions"><summary>Conditions &amp; assumptions</summary><ul id="assumptions"></ul></details>
@@ -68,6 +81,33 @@
     </div>
     <section class="history"><div class="section-line"><h3>Your experiment shelf</h3><span class="small-note">Saved in this browser</span></div><div id="history-list"></div></section>
     <footer><span id="lesson-meta">Misconception Lab</span><span>Predict. Test. Rethink.</span></footer>
+    </div>
+    <section id="panel-planner" role="tabpanel" aria-labelledby="tab-planner" hidden>
+      <div class="planner-intro"><p class="eyebrow">START WITH WHAT YOUR STUDENTS THINK</p><h1>One topic. A few good questions.</h1><p class="lede">Bring a teaching brief or a screenshot. Find a belief, then build an experiment around it.</p></div>
+      <div class="planner-layout">
+        <section class="planner-brief panel" aria-labelledby="brief-heading">
+          <div class="section-line"><div><p class="eyebrow">01 · YOUR TEACHING CONTEXT</p><h2 id="brief-heading">Plan a lesson</h2></div><label class="secondary import-button" for="brief-image-input">▧ Import screenshot<input id="brief-image-input" type="file" accept="image/png,image/jpeg,image/webp" class="sr-only"></label></div>
+          <p class="small-note">PNG, JPEG or WebP, up to 12 MB. Images are sent to OpenAI for interpretation.</p>
+          <div id="brief-image-panel" class="brief-image-panel" hidden>
+            <div class="image-stage"><img id="brief-image-preview" alt="Teaching screenshot to interpret"><div id="brief-image-regions" class="image-regions"></div></div>
+            <div><div class="section-line"><strong>Imported context</strong><button id="remove-brief-image" type="button" class="text-button">Remove image</button></div><p id="brief-uncertainty" class="small-note"></p><ol id="brief-region-list"></ol><p class="small-note">Review the editable fields below before finding experiments.</p></div>
+          </div>
+          <form id="planner-form" class="planner-form">
+            <label for="brief-topic">Topic or concept<input id="brief-topic" name="topic" required minlength="2" maxlength="120" placeholder="e.g. Buoyancy, lenses, photosynthesis"></label>
+            <div class="brief-row"><label for="brief-grade">Grade or level<input id="brief-grade" name="grade" required maxlength="40" list="grade-levels" placeholder="e.g. Grade 8"></label><label for="brief-subject">Subject<input id="brief-subject" name="subject" required maxlength="60" list="subject-areas" placeholder="e.g. Physics"></label></div>
+            <datalist id="grade-levels"><option value="Grade 5"><option value="Grade 6"><option value="Grade 7"><option value="Grade 8"><option value="Grade 9"><option value="Grade 10"><option value="Grade 11"><option value="Grade 12"><option value="Higher education"></datalist>
+            <datalist id="subject-areas"><option value="Physics"><option value="Chemistry"><option value="Biology"><option value="Science"><option value="Mathematics"></datalist>
+            <label for="brief-goal">What should students understand? <span>Optional</span><input id="brief-goal" name="learningGoal" maxlength="500" placeholder="e.g. Explain why some objects float"></label>
+            <label for="brief-beliefs">Beliefs you have already noticed <span>Optional</span><textarea id="brief-beliefs" name="observedBeliefs" rows="3" maxlength="1600" placeholder="e.g. Students think all heavy objects sink. One belief per line is helpful."></textarea></label>
+            <label class="brief-check"><input id="brief-checks" name="includeQuickChecks" type="checkbox" checked> Include a quick question for each belief</label>
+            <div class="planner-form-actions"><button id="plan-submit" type="submit" class="primary">Find experiments ↗</button><button id="planner-cancel" type="button" class="text-button" hidden>Cancel request</button></div>
+          </form>
+          <p id="planner-status" class="small-note" role="status">AI planning uses your configured API key. Reference experiments are available below.</p><p id="planner-error" class="error" role="alert" hidden></p>
+        </section>
+        <section class="starter-library" aria-labelledby="starters-heading"><p class="eyebrow">OR, START EXPLORING</p><h2 id="starters-heading">A place to test an idea.</h2><p class="small-note">Original reference models with checked calculations. Open one without an API key.</p><div id="starter-cards"></div></section>
+      </div>
+      <section id="planner-results" class="planner-results" hidden aria-labelledby="planner-results-heading"><div class="section-line"><div><p class="eyebrow">02 · CHOOSE A BELIEF TO EXPLORE</p><h2 id="planner-results-heading">Your experiment ideas</h2></div><span class="tag">AI suggestions · editable</span></div><p id="planner-results-context" class="small-note"></p><p class="small-note">These are possible beliefs to investigate. Edit a claim to match your class, then build and check its experiment.</p><div id="misconception-cards"></div></section>
+    </section>
   </main>
   <p class="page-note">Experiments are models with assumptions. Bring your doubts; keep asking questions.</p>
   <dialog id="sketch-dialog"><form method="dialog" class="section-line"><div><p class="eyebrow">THINK WITH YOUR HANDS</p><h2>Sketch your idea</h2></div><button class="text-button" aria-label="Close sketch">✕</button></form><p class="small-note">Draw a diagram, add arrows, or write what you think happens.</p><canvas id="sketch-canvas" width="900" height="500" aria-label="Drawing canvas for your idea"></canvas><div class="sketch-actions"><button id="clear-sketch" type="button" class="secondary">Clear drawing</button><button id="use-sketch" type="button" class="primary">Interpret this sketch ↗</button></div><p id="sketch-error" class="error" hidden role="alert"></p></dialog>

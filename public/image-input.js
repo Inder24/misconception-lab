@@ -1,5 +1,18 @@
 // Image data is decoded locally and resized before any API request. Only the
 // explicit upload/drawing action sends this image to the vision endpoint.
+export async function prepareImage(file) {
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type))throw Error('Choose a PNG, JPEG, or WebP image.');
+  if(file.size>12*1024*1024)throw Error('Choose an image smaller than 12 MB.');
+  const bitmap=await createImageBitmap(file);
+  try{
+    const scale=Math.min(1,1600/Math.max(bitmap.width,bitmap.height));
+    const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+    const context=canvas.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,canvas.width,canvas.height);context.drawImage(bitmap,0,0,canvas.width,canvas.height);
+    const image=canvas.toDataURL('image/jpeg',.85);
+    if(image.length>5_000_000)throw Error('This image is too large after resizing. Choose a smaller image.');
+    return image;
+  }finally{bitmap.close();}
+}
 export function setupImageInput({request,onClaim,onError,onBusy}) {
   const $=id=>document.getElementById(id);
   const canvas=$('sketch-canvas'),ctx=canvas.getContext('2d');
@@ -20,13 +33,8 @@ export function setupImageInput({request,onClaim,onError,onBusy}) {
     if(file.size>12*1024*1024){onError('Choose an image smaller than 12 MB.');return;}
     const id=++epoch;imageController?.abort();imageController=null;onBusy(true);
     try{
-      const bitmap=await createImageBitmap(file);
-      if(id!==epoch){bitmap.close();return;}
-      const scale=Math.min(1,1600/Math.max(bitmap.width,bitmap.height));
-      const temporary=document.createElement('canvas');temporary.width=Math.max(1,Math.round(bitmap.width*scale));temporary.height=Math.max(1,Math.round(bitmap.height*scale));
-      const context=temporary.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,temporary.width,temporary.height);context.drawImage(bitmap,0,0,temporary.width,temporary.height);bitmap.close();
-      const image=temporary.toDataURL('image/jpeg',.85);
-      if(image.length>5_000_000)throw Error('This image is too large after resizing. Choose a smaller image.');
+      const image=await prepareImage(file);
+      if(id!==epoch)return;
       await analyze(image);
     }catch(error){if(id===epoch){onBusy(false);$('image-status').textContent='The new image could not be read. Choose another photo or write your claim above.';onError(error.message||'The image could not be decoded. Try another photo.');}}
   });

@@ -50,6 +50,6 @@ export async function buildCheckedLesson({endpoint, payload, request, check, sig
     abort();
     progress('repair', attempt + 1, `Repair ${attempt + 1} of 2: correcting the observed failures`);
     const evidence = failures.length ? failures.slice(0, 40) : [{name:'Execution',detail:'The test matrix did not pass'}];
-    candidate = await request('/api/repair', {claim:payload.claim || candidate.lesson.claim, lesson:candidate.lesson, failures:evidence, attempt:attempt + 1}, {signal});
+    candidate = await request('/api/repair', {claim:payload.claim || candidate.lesson.claim, lesson:candidate.lesson, failures:evidence, attempt:attempt + 1,...(payload.brief?{brief:payload.brief}:{})}, {signal});
   }
 }

@@ -8,13 +8,15 @@ const envelope = code => ({id:'candidate',source:'astra',lesson:{...lesson,code}
 const pass = {passed:true,checks:[{name:'Execution',passed:true,detail:'3 cases passed'}],runs:[{params:{},viewport:{width:320,height:340,progress:1},metrics:[],summary:'Observed'}]};
 
 test('a failed candidate is repaired from observed failures before it is released', async () => {
-  const result = await buildCheckedLesson({endpoint:'/api/lessons',payload:{claim:lesson.claim},
-    request:async(path,body)=>path==='/api/lessons'?envelope('broken'):path==='/api/review'?{passed:true,summary:'Consistent',issues:[]}:envelope(body.failures[0].detail==='Runtime error'?'fixed':'still broken'),
+  const brief={topic:'Forces',grade:'Grade 5',subject:'Science',learningGoal:'Compare falling objects',observedBeliefs:'',includeQuickChecks:true};
+  const result = await buildCheckedLesson({endpoint:'/api/lessons',payload:{claim:lesson.claim,brief},
+    request:async(path,body)=>{if(path==='/api/lessons')return envelope('broken');if(path==='/api/review')return {passed:true,summary:'Consistent',issues:[]};assert.deepEqual(body.brief,brief);return {...envelope(body.failures[0].detail==='Runtime error'?'fixed':'still broken'),brief:body.brief};},
     check:async l=>l.code==='broken'?{passed:false,checks:[{name:'Execution',passed:false,detail:'Runtime error'}],runs:[]}:pass});
   assert.equal(result.lesson.code,'fixed');
   assert.equal(result.validation.repairs,1);
   assert.equal(result.validation.runtime.passed,true);
   assert.equal(result.validation.review.passed,true);
+  assert.deepEqual(result.brief,brief);
   assert.ok(result.validation.receipt.some(x=>x.stage==='repair'));
 });
 

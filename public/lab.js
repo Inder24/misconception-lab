@@ -6,12 +6,15 @@ import {preflightLesson} from './experiment-checks.js';
 import {buildCheckedLesson} from './lab-pipeline.js';
 import {createLivePartner} from './live-client.js';
 import {setupImageInput} from './image-input.js';
+import {setupPlanner,showWorkspace} from './planner.js';
+import {createPlayback} from './playback.js';
 import {$,text,renderChoices,renderMetrics,renderReceipt,addMessage,showError,conditionLabels,renderComparison} from './lab-ui.js';
 
 const state=new LabState(starter);
 let selected=null,host=null,baselineHost=null,needsReload=false,hasRun=false,loading=false;
 let buildController=null,tutorController=null,buildEpoch=0,lessonEpoch=0,runEpoch=0,tutorEpoch=0;
-let imageBusy=false,tutorBusy=false,apiReady=false,voiceActive=false;
+let imageBusy=false,tutorBusy=false,apiReady=false,voiceActive=false,plannerBusy=false;
+let planner=null,playback=null,playbackContext=null,controlEpoch=0,conditionPending=false;
 let shelf=[],tutorHistory=[],followupQuestion=starter.lesson.followup,controlTimer;
 const sameIdentity=(a,b)=>a.lessonId===b.lessonId&&a.version===b.version;
 const currentIdentity=()=>({...state.identity});
@@ -25,7 +28,7 @@ async function request(path,body,{signal}={}){
   return data;
 }
 function setActions(){
-  const busy=Boolean(buildController)||imageBusy||loading;
+  const busy=Boolean(buildController)||imageBusy||loading||plannerBusy||conditionPending;
   $('generate').disabled=busy||tutorBusy;$('revise').disabled=busy||tutorBusy;$('claim').disabled=Boolean(buildController);
   $('run').disabled=busy||(!state.prediction&&selected===null);
   $('run-mobile').disabled=$('run').disabled;
@@ -35,6 +38,9 @@ function setActions(){
   $('next-question').disabled=busy||tutorBusy||!state.results;
   $('photo-input').disabled=busy||tutorBusy;$('open-sketch').disabled=busy||tutorBusy;
   for(const button of document.querySelectorAll('[data-example]'))button.disabled=busy;
+  for(const button of document.querySelectorAll('.history-item'))button.disabled=busy;
+  for(const control of $('playback-controls').querySelectorAll('button,input,select'))control.disabled=busy||!state.results;
+  planner?.setBusy(Boolean(buildController)||imageBusy||loading||tutorBusy||conditionPending);
   for(const phase of ['predict','test','explain'])$('step-'+phase).classList.toggle('active',state.phase===phase);
 }
 function syncVoice(){live.sync();}
@@ -57,7 +63,16 @@ function renderControls(){
     const label=document.createElement('label'),line=document.createElement('span'),title=document.createElement('span'),output=document.createElement('output'),input=document.createElement('input');
     title.textContent=control.label;input.type='range';input.id='control-'+control.id;input.min=control.min;input.max=control.max;input.step=control.step;input.value=state.params[control.id];input.setAttribute('aria-label',control.label);output.htmlFor=input.id;output.textContent=state.params[control.id]+' '+control.unit;
     line.append(title,output);label.append(line,input);$('controls').append(label);
-    input.addEventListener('input',()=>{try{state.setControl(control.id,Number(input.value));output.textContent=input.value+' '+control.unit;runEpoch++;invalidateTutor();clearChangedResult();text('run-status','Conditions changed');renderComparison(state);setActions();syncVoice();clearTimeout(controlTimer);controlTimer=setTimeout(()=>runCurrent({animate:false,automaticTutor:false}).catch(handleRunError),100);}catch(error){showError(error.message);}});
+    input.addEventListener('input',()=>{
+      output.textContent=input.value+' '+control.unit;
+      const patch=Object.fromEntries(state.lesson.controls.map(c=>[c.id,Number($('control-'+c.id).value)])),identity=currentIdentity(),token=++controlEpoch;
+      runEpoch++;conditionPending=true;invalidateTutor();clearTimeout(controlTimer);setActions();
+      playback.reset().then(()=>{
+        if(token!==controlEpoch||!sameIdentity(identity,state.identity))return;
+        state.setParams(patch);clearChangedResult();text('run-status','Conditions changed');renderComparison(state);setActions();syncVoice();
+        controlTimer=setTimeout(()=>runCurrent({animate:false,automaticTutor:false}).catch(handleRunError),100);
+      }).catch(error=>showError(error.message)).finally(()=>{if(token===controlEpoch){conditionPending=false;setActions();}});
+    });
   }
 }
 function renderShelf(){
@@ -73,15 +88,16 @@ function renderFollowupOptions(){
   renderChoices('followup-options',followupQuestion,index=>{text('followup-feedback',followupQuestion.feedback[index]);tutorHistory.push({role:'user',text:`For the question "${followupQuestion.prompt}", I chose "${followupQuestion.options[index]}".`});tutorHistory=tutorHistory.slice(-10);$('next-question').hidden=false;});
 }
 async function loadLesson(entry,{preservePinned=false,signal}={}){
-  const token=++lessonEpoch;runEpoch++;invalidateTutor();clearTimeout(controlTimer);loading=true;setActions();
+  const token=++lessonEpoch;runEpoch++;controlEpoch++;conditionPending=false;invalidateTutor();clearTimeout(controlTimer);loading=true;setActions();
+  await playback?.pause();
   const candidate=new SandboxExperiment($('experiment-container'));
   try{
     await candidate.load(entry.lesson.code,{signal});signal?.throwIfAborted();
     if(token!==lessonEpoch){candidate.destroy();return;}
-    state.accept(entry,{preservePinned});host?.destroy();host=candidate;needsReload=false;selected=null;hasRun=false;tutorHistory=[];
-    $('experiment-container').hidden=true;$('prediction-cover').hidden=false;$('frame-error').hidden=true;$('explanation').hidden=true;$('followup').hidden=true;$('metrics').replaceChildren();$('tutor-messages').replaceChildren();
+    state.accept(entry,{preservePinned});await playback?.reset();playbackContext=null;host?.destroy();host=candidate;needsReload=false;selected=null;hasRun=false;tutorHistory=[];
+    $('experiment-container').hidden=true;$('prediction-cover').hidden=false;$('frame-error').hidden=true;$('explanation').hidden=true;$('followup').hidden=true;$('playback-controls').hidden=true;$('metrics').replaceChildren();$('tutor-messages').replaceChildren();
     $('drop-preview').hidden=entry.source!=='built-in';$('idea-preview').hidden=entry.source==='built-in';
-    text('domain',entry.lesson.domain.toUpperCase());text('lesson-title',entry.lesson.title);text('lesson-claim','“'+entry.lesson.claim+'”');text('prediction-prompt',entry.lesson.prediction.prompt);text('source',entry.source==='astra'?`Astra · v${state.version}`:'Built-in reference');text('visual-title','Your experiment');text('run-status','Make a prediction first');text('summary','What do you expect to happen?');text('run','▶ Run experiment');text('tutor-status',apiReady?'Make a prediction and run the lab to explore together.':'Built-in lesson available · AI features need API setup.');text('source-code',entry.lesson.code);text('lesson-meta',entry.source==='astra'?`Generated with GPT-6 Astra · ${new Date(entry.createdAt).toLocaleDateString()}`:'Built-in reference · idealized falling-objects model');
+    text('domain',entry.lesson.domain.toUpperCase());text('lesson-title',entry.lesson.title);text('lesson-claim','“'+entry.lesson.claim+'”');text('prediction-prompt',entry.lesson.prediction.prompt);text('source',entry.source==='astra'?`Astra · v${state.version}`:entry.source==='curated'?'Reference model':'Built-in reference');text('visual-title','Your experiment');text('run-status','Make a prediction first');text('summary','What do you expect to happen?');text('run','▶ Run experiment');text('tutor-status',apiReady?'Make a prediction and run the lab to explore together.':'Reference lesson available · AI features need API setup.');text('source-code',entry.lesson.code);text('lesson-meta',entry.source==='astra'?`Generated with GPT-6 Astra · ${new Date(entry.createdAt).toLocaleDateString()}${entry.brief?' · '+entry.brief.grade+' · '+entry.brief.subject:''}`:entry.source==='curated'?`${entry.catalog.topic} · ${entry.catalog.grade} · Original reference model`:'Built-in reference · idealized falling-objects model');
     $('prediction-reason').value='';$('confidence').value=50;text('confidence-value','50%');
     $('assumptions').replaceChildren();for(const assumption of entry.lesson.assumptions){const li=document.createElement('li');li.textContent=assumption;$('assumptions').append(li);}
     renderControls();setPredictionControls();resetFollowup();
@@ -99,10 +115,11 @@ function recordPrediction({selectedIndex=selected,reason=$('prediction-reason').
 }
 function handleRunError(error){if(error.name==='AbortError')return;needsReload=true;text('frame-error',error.message||'This experiment could not run. Replay to retry.');$('frame-error').hidden=false;text('run-status','Replay to retry the experiment');setActions();}
 async function runCurrent({animate=true,automaticTutor=true,signal}={}){
-  signal?.throwIfAborted();if(loading||buildController)throw Error('Wait for the experiment to finish loading.');
+  signal?.throwIfAborted();if(loading||buildController||conditionPending||plannerBusy)throw Error('Wait for the current lab action to finish.');
   if(!state.prediction)recordPrediction();
   const identity=currentIdentity(),params={...state.params},epoch=++runEpoch,first=!hasRun;
   const valid=()=>epoch===runEpoch&&sameIdentity(identity,state.identity)&&!signal?.aborted;
+  await playback.reset();if(!valid())return null;
   if(needsReload){await host.load(state.lesson.code,{signal});needsReload=false;}
   $('frame-error').hidden=true;text('run-status','Running the experiment…');
   const viewport={width:Math.max(260,Math.round($('experiment-container').parentElement.clientWidth)),height:340,progress:1};
@@ -114,15 +131,9 @@ async function runCurrent({animate=true,automaticTutor=true,signal}={}){
     $('explanation').hidden=false;$('followup').hidden=false;
     text('verdict',({misconception:'A BELIEF WORTH REVISING',partly_true:'IT DEPENDS ON THE CONDITIONS',accurate:'YOUR CLAIM HOLDS UP',not_testable:'AN EXPLANATION, NOT A PROOF'})[state.lesson.verdict]);
     text('feedback',state.lesson.prediction.feedback[state.prediction.selectedIndex]);text('explanation-text',state.lesson.explanation);text('conditions-note','Your original prediction was for: '+conditionLabels(state.lesson,state.prediction.params));
+    playbackContext={identity,params,viewport,epoch};$('playback-controls').hidden=false;
     renderComparison(state);setActions();syncVoice();
-    if(animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
-      const start=performance.now();
-      while(valid()){
-        const progress=Math.min((performance.now()-start)/1500,1);
-        await host.run(params,{...viewport,progress},{signal});if(progress===1)break;
-        await new Promise(resolve=>setTimeout(resolve,65));
-      }
-    }
+    if(animate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)await playback.play();else await playback.seek(1);
     if(!valid())return null;
     if(first&&automaticTutor&&apiReady&&!imageBusy&&!buildController)askTutor(undefined,{automatic:true}).catch(()=>{});
     return {...state.read(),ok:true};
@@ -146,12 +157,13 @@ async function checkCandidate(lesson,{signal}={}){
   finally{candidate.destroy();container.remove();}
 }
 function cancelBuild(){buildEpoch++;buildController?.abort();buildController=null;$('generation').hidden=true;setActions();}
-$('cancel').addEventListener('click',()=>{cancelBuild();text('run-status',state.prediction?'Your current experiment is still available':'Make a prediction first');});
+$('cancel').addEventListener('click',()=>{cancelBuild();planner?.cancel();text('run-status',state.prediction?'Your current experiment is still available':'Make a prediction first');});
 async function buildLesson(endpoint,payload,{signal,preservePinned=false}={}){
   if(buildController||imageBusy||tutorBusy)throw Error('Let the current request finish before building another experiment.');
   const controller=new AbortController();buildController=controller;const epoch=++buildEpoch;const combined=signal?AbortSignal.any([signal,controller.signal]):controller.signal;
-  invalidateTutor();$('generation').hidden=false;$('error').hidden=true;setActions();
+  runEpoch++;controlEpoch++;clearTimeout(controlTimer);invalidateTutor();$('generation').hidden=false;$('error').hidden=true;setActions();
   try{
+    await playback.reset();
     const entry=await buildCheckedLesson({endpoint,payload,request,check:checkCandidate,signal:combined,onProgress:(event,receipt)=>{
       if(epoch!==buildEpoch)return;
       const titles={build:'Designing your experiment',test:'Testing the generated experiment',review:'Checking the explanation and results',repair:'Repairing the experiment',check:'A check found something to fix',ready:'Your experiment is ready'};
@@ -170,7 +182,7 @@ $('claim-form').addEventListener('submit',event=>{event.preventDefault();buildLe
 for(const button of document.querySelectorAll('[data-example]'))button.addEventListener('click',()=>{$('claim').value=button.dataset.example;$('claim').focus();});
 async function reviseExperiment(message,{signal}={}){
   if(state.results&&!state.pinned)await pinRun();signal?.throwIfAborted();
-  return buildLesson('/api/revise',{lesson:state.lesson,request:message,params:state.params},{signal,preservePinned:true});
+  return buildLesson('/api/revise',{lesson:state.lesson,request:message,params:state.params,...(state.envelope.brief?{brief:state.envelope.brief}:{})},{signal,preservePinned:true});
 }
 $('whatif-form').addEventListener('submit',event=>{event.preventDefault();reviseExperiment($('whatif').value.trim()).catch(error=>{if(error.name!=='AbortError')showError(error.message);});});
 
@@ -184,7 +196,7 @@ async function askTutor(message,{automatic=false,signal}={}){
   try{
     const history=tutorHistory.slice(-9).map(entry=>({...entry,text:entry.text.slice(0,2400)}));
     history.push({role:'assistant',text:`The currently displayed transfer question is: ${followupQuestion.prompt} Options: ${followupQuestion.options.map((option,index)=>`${index+1}. ${option}`).join(' | ')}`.slice(0,2400)});
-    const data=await request('/api/tutor',{lesson:state.lesson,selectedIndex:state.prediction.selectedIndex,reason:state.prediction.reason,confidence:state.prediction.confidence,params:state.params,results:{metrics:state.results.metrics,summary:state.results.summary},history,...(message?{message}:{})},{signal:combined});
+    const data=await request('/api/tutor',{lesson:state.lesson,selectedIndex:state.prediction.selectedIndex,reason:state.prediction.reason,confidence:state.prediction.confidence,params:state.params,results:{metrics:state.results.metrics,summary:state.results.summary},history,...(state.envelope.brief?{brief:state.envelope.brief}:{}),...(message?{message}:{})},{signal:combined});
     combined.throwIfAborted();if(epoch!==tutorEpoch||!sameIdentity(identity,state.identity)||params!==JSON.stringify(state.params))return null;
     addMessage($('tutor-messages'),'assistant',data.message);tutorHistory.push({role:'assistant',text:data.message});tutorHistory=tutorHistory.slice(-10);
     followupQuestion=data.question;text('followup-source','Adapted to your reasoning');text('reasoning-focus',data.reasoningFocus);text('followup-prompt',data.question.prompt);text('followup-feedback','');$('next-question').hidden=true;renderFollowupOptions();text('tutor-status','A new question, based on how you approached this experiment.');
@@ -198,11 +210,14 @@ $('next-question').addEventListener('click',()=>askTutor('Give me a different tr
 async function executeTool(name,args,{signal}={}){
   signal?.throwIfAborted();
   if(name==='read_lab')return getLiveState();
+  if(conditionPending||plannerBusy||loading||imageBusy||buildController)throw Error('Wait for the current lab action to finish.');
   if(!sameIdentity(args,state.identity))throw Error('This action belongs to an older experiment. Read the current lab first.');
   if(name==='record_prediction'){recordPrediction(args,args);return {ok:true,...getLiveState()};}
   if(name==='set_control'){
     if(!state.prediction)throw Error('Ask the learner to make a prediction first.');
-    state.setControl(args.controlId,args.value,args);runEpoch++;invalidateTutor();clearChangedResult();renderControls();setActions();renderComparison(state);syncVoice();
+    runEpoch++;const token=++controlEpoch;conditionPending=true;clearTimeout(controlTimer);setActions();
+    try{await playback.reset();signal?.throwIfAborted();state.setControl(args.controlId,args.value,args);invalidateTutor();clearChangedResult();renderControls();renderComparison(state);syncVoice();}
+    finally{if(token===controlEpoch){conditionPending=false;setActions();}}
     if(hasRun)return await runCurrent({animate:false,automaticTutor:false,signal});
     return {ok:true,...getLiveState()};
   }
@@ -228,10 +243,49 @@ const live=createLivePartner({getState:getLiveState,onTool:executeTool,onStatus:
   else{caption.text+=entry.text;caption.endMs=entry.endMs;const label=document.createElement('small');label.textContent=entry.role==='user'?'You':'Lab partner';caption.item.replaceChildren(label,document.createTextNode(caption.text));}
 }});
 $('voice-toggle').addEventListener('click',async()=>{try{if(voiceActive)await live.stop();else if(!apiReady){text('voice-error','Configure the server’s OpenAI API key to start a live conversation.');$('voice-error').hidden=false;}else await live.start();}catch(error){text('voice-error',error.message);$('voice-error').hidden=false;}});
+playback=createPlayback({
+  render:async progress=>{
+    const context=playbackContext;
+    if(!context||!state.results||loading||!sameIdentity(context.identity,state.identity)||JSON.stringify(context.params)!==JSON.stringify(state.params))return;
+    await host.run(context.params,{...context.viewport,progress});
+  },
+  onChange:({progress,playing,speed})=>{
+    text('playback-toggle',playing?'Ⅱ Pause':'▶ Play');$('playback-toggle').setAttribute('aria-label',playing?'Pause animation':'Play animation');
+    $('playback-progress').value=Math.round(progress*100);text('playback-position',Math.round(progress*100)+'%');$('playback-speed').value=String(speed);
+  },onError:handleRunError
+});
+$('playback-toggle').addEventListener('click',()=>{if(playback.getState().playing)playback.pause();else if(needsReload)runCurrent().catch(handleRunError);else playback.play();});
+$('playback-progress').addEventListener('input',()=>playback.seek(Number($('playback-progress').value)/100));
+$('playback-speed').addEventListener('change',()=>playback.setSpeed(Number($('playback-speed').value)));
+$('reset-conditions').addEventListener('click',async()=>{
+  const identity=currentIdentity(),token=++controlEpoch;runEpoch++;conditionPending=true;clearTimeout(controlTimer);setActions();
+  try{
+    await playback.reset();if(token!==controlEpoch||!sameIdentity(identity,state.identity))return;
+    state.setParams(Object.fromEntries(state.lesson.controls.map(c=>[c.id,c.initial])));invalidateTutor();renderControls();clearChangedResult();conditionPending=false;setActions();
+    await runCurrent({animate:false,automaticTutor:false});text('run-status','Initial conditions restored · your original prediction is kept');
+  }catch(error){handleRunError(error);}finally{if(token===controlEpoch){conditionPending=false;setActions();}}
+});
+async function openStarter(entry,{signal}={}){
+  if(buildController||imageBusy||tutorBusy||loading)throw Error('Let the current request finish first.');
+  const controller=new AbortController();buildController=controller;const epoch=++buildEpoch;
+  const combined=signal?AbortSignal.any([signal,controller.signal]):controller.signal;
+  runEpoch++;controlEpoch++;clearTimeout(controlTimer);$('generation').hidden=false;$('error').hidden=true;text('generation-title','Checking the reference experiment');setActions();
+  try{
+    await playback.reset();const runtime=await checkCandidate(entry.lesson,{signal:combined});combined.throwIfAborted();
+    if(!runtime.passed)throw Error('The reference model did not pass its browser checks. Your current experiment is kept.');
+    const receipt=[{stage:'reference',status:'passed',detail:'Original reference model. Its calculations are covered by independently written numerical tests.'},{stage:'test',status:'passed',detail:`${runtime.runs.length} browser execution cases passed across controls, sizes and playback positions.`}];
+    await loadLesson({...entry,validation:{runtime,repairs:0,receipt}},{signal:combined});
+    if(epoch!==buildEpoch)return null;
+    return {ok:true,...state.read()};
+  }finally{if(epoch===buildEpoch){buildController=null;$('generation').hidden=true;setActions();}}
+}
 const imageInput=setupImageInput({request,onClaim:claim=>{$('claim').value=claim;},onError:showError,onBusy:busy=>{imageBusy=busy;setActions();}});
+planner=setupPlanner({request,onBuild:(payload,options)=>buildLesson('/api/lessons',payload,options),onOpenStarter:openStarter,onBusy:busy=>{plannerBusy=busy;setActions();},isLabBusy:()=>Boolean(buildController)||loading||imageBusy||tutorBusy||conditionPending});
 let resizeTimer;
-addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(hasRun&&!loading&&!buildController)runCurrent({animate:false,automaticTutor:false}).catch(handleRunError);},200);});
-addEventListener('pagehide',()=>{cancelBuild();invalidateTutor();host?.destroy();baselineHost?.destroy();live.stop();});
+function refreshVisibleExperiment(){if(hasRun&&!$('panel-experiment').hidden&&!loading&&!buildController&&!plannerBusy&&!conditionPending)runCurrent({animate:false,automaticTutor:false}).catch(handleRunError);}
+addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(refreshVisibleExperiment,200);});
+addEventListener('workspacechange',event=>{if(event.detail==='experiment'){clearTimeout(resizeTimer);resizeTimer=setTimeout(refreshVisibleExperiment,0);}else playback.pause();});
+addEventListener('pagehide',()=>{cancelBuild();planner?.cancel();invalidateTutor();playback.destroy().then(()=>host?.destroy());baselineHost?.destroy();live.stop();});
 const initial=shelf.find(x=>x.id===new URL(location.href).searchParams.get('lesson'))||starter;
 loadLesson(initial).catch(async error=>{showError(error.message);if(initial!==starter)await loadLesson(starter).catch(fallback=>showError(fallback.message));});
 fetch('/api/status').then(r=>r.json()).then(data=>{apiReady=Boolean(data.ready);text('connection',apiReady?'API key configured':'API setup needed');$('connection').dataset.ready=String(apiReady);text('tutor-status',apiReady?'Make a prediction and run the lab to explore together.':'Built-in lesson available · AI features need API setup.');}).catch(()=>text('connection','Server unavailable'));

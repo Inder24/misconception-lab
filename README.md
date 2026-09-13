@@ -39,6 +39,19 @@ An existing `OPENAI_API_KEY` environment variable also works and takes precedenc
 - **Sketch/photo input:** draw in the built-in canvas or upload PNG/JPEG/WebP. The image is decoded/resized locally, interpreted by Astra, and shown with highlighted regions and uncertainty. The proposed claim is editable; edits made while interpretation runs are preserved.
 - **What-if comparisons:** pin a run, change its controls, and compare the recorded outcomes. A requested new capability generates a checked lesson revision while retaining the baseline and its version.
 
+## Plan a lesson
+
+Use the **Plan a lesson** tab beside **Experiment**. Switching tabs keeps your current experiment and form edits.
+
+1. Enter a topic, grade and subject, with optional learning goals and observed beliefs. Or choose **Import screenshot** to extract those fields from a PNG/JPEG/WebP teaching screenshot, then review the highlighted source regions and edit the interpretation.
+2. Choose **Find experiments**. Edit a suggested claim, its proposed experiment, or the question and reasoning under **Customize**. **Build this experiment** uses that edited proposal and teaching context, runs the existing checks/repair workflow, then opens the accepted lesson in **Experiment**.
+3. For immediate exploration without an API key, open either reference model: **Buoyancy and density** or **Converging lenses**. Each runs its browser checks before opening. Their calculations also have independent numerical reference tests; neither is presented as live AI generation.
+4. Make a prediction and run. Use **Play/Pause**, the **Animation** slider and speed selector to examine the scene. Playback changes the view while measurements retain the final result. **Reset conditions** restores the initial controls and keeps the original prediction. You can still pin and compare runs.
+
+The buoyancy model shows force balance and submerged fraction; its playback is a force reveal, not a physical settling trajectory. The lens model shows signed real/virtual image properties and explicitly handles the focal-plane limit. Read each model's **Conditions & assumptions** for its scope.
+
+AI planning and screenshot interpretation need the API key described above. Input images are resized locally and sent to OpenAI only after import. New field edits made while interpretation runs are preserved. The teaching brief travels with generated lessons, repairs, revisions and follow-up tutoring. Planner drafts currently last for the open page session; accepted generated lessons use the existing local shelf.
+
 ## Focused verification
 
 ```sh
@@ -58,6 +71,8 @@ npm run verify:browser
 
 This separate loopback server uses **controlled OpenAI responses**. Its first generated lesson deliberately throws so the real browser execution/repair flow can be checked. It also provides image interpretation, an adaptive question, and a gravity revision. Live voice is deliberately unavailable there. It is a verification fixture, not a demo of live generation.
 
+The fixture also supplies planner cards and teaching-brief extraction. Its labeled **Use sample teaching screenshot** helper sends a synthetic PNG through the real file-change handler and image decoder, so the import flow can be checked without automating a native file picker. These helpers are absent from the normal app and production build.
+
 Suggested team pass:
 
 1. Predict, explain your hunch, run, then change air resistance.
@@ -75,6 +90,9 @@ Suggested team pass:
 | `public/lab-pipeline.js` | Build → execute → review → repair workflow |
 | `public/experiment-host.js`, `experiment-checks.js`, `experiment-frame.html` | Isolated execution and actual browser checks |
 | `public/image-input.js`, `lab-ui.js` | Image/sketch input and presentation helpers |
+| `public/planner.js`, `planner-schema.js`, `planner.css` | Lesson-planning tab, editable screenshot context and idea cards |
+| `public/experiment-starters.js` | Original buoyancy and thin-lens reference models |
+| `public/playback.js` | Serialized animation playback, pause, scrubbing and speed |
 | `public/live-client.js`, `live-protocol.js` | WebRTC lifecycle, transcripts and delegated tools |
 | `server/learning.mjs` | Astra generation, repair, review, vision and tutoring |
 | `server/live.mjs` | Trusted Live session creation and signed ownership for stop |
