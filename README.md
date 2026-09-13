@@ -2,6 +2,35 @@
 
 Turn an everyday belief into an experiment you can challenge with an AI lab partner.
 
+## Live app
+
+[Open Misconception Lab](https://misconception-lab.likhariinder.chatgpt.site)
+
+Built-in experiments are available to everyone. For AI-powered creation, sketch interpretation, tutoring, and voice, visitors sign in with their own ChatGPT account; they do not need to provide an API key.
+
+## Why it is different
+
+Misconception Lab turns a learner's intuition into a hands-on inquiry loop: **hunch → prediction → experiment → observation → rethink**. Instead of presenting an answer immediately, it lets learners change conditions, see the consequences, and receive an explanation tailored to their prediction, confidence, and observed result.
+
+Learners can start from a written hunch, photograph, or sketch. The system builds a bespoke visual experiment, runs it in a constrained sandbox, checks it across conditions, and can ask Astra to repair a failed candidate before it replaces the current lesson.
+
+## Built with
+
+- **GPT-6 Astra** for experiment generation, visual interpretation, scientific review, repair, tutoring, and adaptive follow-up questions.
+- **GPT-Live-1** for the real-time voice lab partner and its delegated lab actions.
+- **WebRTC** for voice sessions, with signed server-side session ownership.
+- **Sandboxed browser JavaScript** for deterministic interactive simulations and execution checks.
+- **Cloudflare Workers and OpenAI Sites** for the deployed application and protected server-side AI routes.
+- Purpose-built reference experiments for falling objects, Newton's cradle, buoyancy, lenses, and everyday percentage changes.
+
+## Who it is for
+
+Misconception Lab is designed for curious learners aged **8–16** who learn best by making a prediction and seeing an idea play out. It also gives teachers, tutors, parents, and after-school programs a practical way to surface misconceptions and run short formative learning activities.
+
+## Enterprise path
+
+The current project can grow into an education platform for schools, tutoring networks, and edtech providers. Useful enterprise extensions include curriculum-aligned experiment libraries, teacher workspaces, class dashboards for predictions and confidence, approved experiment templates, organization-level access controls, moderation and audit trails, learning analytics, and LMS integrations. These capabilities would let educators use the same inquiry loop at class scale while retaining human review of generated content.
+
 ## Run locally
 
 Requires Node.js 22 or later.
