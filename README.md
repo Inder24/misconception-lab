@@ -113,3 +113,25 @@ Live sessions use a server-side signed ownership token, with the API key as the 
 ## Current verification status
 
 The automated suite/build, real browser sandbox harness, and focused UI flow with controlled remote responses have been verified locally. Real Astra generation, image quality, and live audio remain to be checked after configuring the API key as described above. No claim of live API verification is made.
+
+### Hackathon debug panel
+
+Click **</> Astra debug** (bottom right) to open the side console. It shows actual
+Astra request start/end timings, errors with server reference IDs, generated
+JavaScript, sandbox test cases, repair/review stages, and experiment runs.
+Code appears when the response completes; this is not token streaming or model
+reasoning. The latest code is expandable and may reveal the lesson's answer.
+The panel captures up to 180 events in memory for the current tab, without request
+bodies, credentials, or uploaded images. **Clear** resets the displayed history;
+**Follow logs** controls automatic scrolling. Close it with the close button or
+Escape. On small screens it opens as a drawer. Server logs remain separate.
+
+### Discovery Lab design
+
+The main site uses the Discovery Lab visual direction: ivory backgrounds, cobalt
+primary actions, colorful subject cards, and a prediction-first workbench. The
+planner, saved lessons, comparison, and debug drawer share the updated layout.
+The falling-object reference includes labeled mass lanes, trajectories, shaded
+spheres, and physical elapsed time. Buoyancy and lens references have clearer
+scene grouping; numerical models are unchanged. New Astra generations receive
+illustration and composition guidance. Existing saved code is not rewritten.

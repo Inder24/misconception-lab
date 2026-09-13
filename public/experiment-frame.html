@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; worker-src blob:; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; media-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"><style>*{box-sizing:border-box}body{margin:0;background:#fcfdf9}canvas{display:block;width:100%;height:340px}</style></head><body><canvas aria-label="Interactive experiment visualization" role="img"></canvas><script>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval'; worker-src blob:; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; media-src 'none'; frame-src 'none'; form-action 'none'; base-uri 'none'"><style>*{box-sizing:border-box}body{margin:0;background:#fbfcff}canvas{display:block;width:100%;height:340px}</style></head><body><canvas aria-label="Interactive experiment visualization" role="img"></canvas><script>
 (()=>{
  const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');let worker,nonce,job=0,active=null,timer,started=false;
  const safeNumber=(n,lo=-2000,hi=4000)=>typeof n==='number'&&Number.isFinite(n)&&n>=lo&&n<=hi;
@@ -20,10 +20,10 @@
  }
  function draw(result,viewport){
   validate(result);const ratio=Math.min(devicePixelRatio||1,2),w=viewport.width,h=viewport.height;
-  canvas.width=w*ratio;canvas.height=h*ratio;canvas.style.height=h+'px';ctx.setTransform(ratio,0,0,ratio,0,0);ctx.fillStyle='#fcfdf9';ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle='#e9eee3';ctx.lineWidth=1;for(let x=0;x<w;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}for(let y=0;y<h;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+  canvas.width=w*ratio;canvas.height=h*ratio;canvas.style.height=h+'px';ctx.setTransform(ratio,0,0,ratio,0,0);ctx.fillStyle='#fbfcff';ctx.fillRect(0,0,w,h);
+  // A quiet stage leaves scene structure to the experiment, rather than imposing graph axes.
   for(const m of result.marks){
-   ctx.fillStyle=m.color||'#315b46';ctx.strokeStyle=m.color||'#315b46';ctx.lineWidth=m.width??2;
+   ctx.fillStyle=m.color||'#315b46';ctx.strokeStyle=m.color||'#315b46';ctx.lineWidth=m.width??2;ctx.lineCap='round';ctx.lineJoin='round';
    if(m.type==='polyline'){ctx.beginPath();m.points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();}
    if(m.type==='circle'){ctx.beginPath();ctx.arc(m.x,m.y,m.r,0,Math.PI*2);ctx.fill();}
    if(m.type==='rect')ctx.fillRect(m.x,m.y,m.w,m.h);

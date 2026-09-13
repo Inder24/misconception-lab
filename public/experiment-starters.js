@@ -5,7 +5,7 @@ export function buoyancyExperiment(params,viewport){
  const w=viewport.width,p=viewport.progress,g=9.81,V=volume/1000;
  const fraction=Math.min(1,rho/fluid),weight=rho*V*g,buoyancy=fluid*V*fraction*g;
  const floating=rho<fluid,neutral=rho===fluid,outcome=floating?'Floating':neutral?'Neutral':'Sinking';
- const marks=[],ink='#244d3b',muted='#557567',gold='#b57932',water='#dcece9';
+ const marks=[],ink='#23314d',muted='#64748b',gold='#b88317',water='#dfedf9';
  const text=(x,y,value,size=14,color=ink,align='left')=>marks.push({type:'text',x,y,text:value,size,color,align});
  const rect=(x,y,width,height,color)=>marks.push({type:'rect',x,y,w:width,h:height,color});
  const line=(x,y,x2,y2,color=ink,width=2)=>marks.push({type:'line',x,y,x2,y2,color,width});
@@ -13,10 +13,12 @@ export function buoyancyExperiment(params,viewport){
  text(20,29,'The float test',20);text(20,53,floating?'Floating equilibrium':neutral?'Fully submerged · neutral':'Fully submerged · sinking',14,muted);
  text(20,79,'W ↓ weight     B ↑ buoyancy',12,muted);
  const surface=146,size=38+Math.cbrt(volume)*12,cx=w*.34;
- rect(18,surface,w-36,138,water);line(18,surface,w-18,surface,'#7facab',2);
+ rect(18,surface,w-36,138,water);rect(18,surface,w-36,8,'#bcd9f2');rect(18,250,w-36,34,'#cddfed');line(18,surface,w-18,surface,'#669bcc',2);
+ for(let i=0;i<5;i++){const yy=surface+22+i*22;line(w-32,yy,w-22,yy,'#7da2c2',1);}
+ line(18,surface,18,284,'#aac4db',2);line(w-18,surface,w-18,284,'#aac4db',2);
  for(let x=24;x<w-22;x+=24)line(x,281,x+7,281,'#aaccc8',1);
  const top=floating?surface-size*(1-fraction):surface+28+(neutral?0:p*18);
- rect(cx-size/2,top,size,size,'#d6a357');
+ rect(cx-size/2+4,top+4,size,size,'#23314d15');rect(cx-size/2,top,size,size,'#d6a357');rect(cx-size/2,top,6,size,'#f4ce84');rect(cx-size/2+6,top,size-6,5,'#efc879');
  const wetTop=Math.max(surface,top),wetHeight=Math.max(0,top+size-wetTop);rect(cx-size/2,wetTop,size,wetHeight,'#bb8c48');
  line(cx-size/2,top,cx+size/2,top,gold,2);line(cx-size/2,top,cx-size/2,top+size,gold,2);line(cx+size/2,top,cx+size/2,top+size,gold,2);
  text(cx,top+size/2+5,String(rho),12,'#ffffff','center');
@@ -31,13 +33,14 @@ export function buoyancyExperiment(params,viewport){
 export function lensExperiment(params,viewport){
  const {object_distance:u,focal_length:f,object_height:ho}=params;
  const w=viewport.width,p=viewport.progress,atFocus=u===f,di=atFocus?null:f*u/(u-f),m=atFocus?null:-di/u,hi=atFocus?null:m*ho;
- const virtual=!atFocus&&di<0,ink='#244d3b',muted='#557567',green='#397e62',gold='#c18a3e';
+ const virtual=!atFocus&&di<0,ink='#23314d',muted='#64748b',green='#4268d8',gold='#b88317';
  const marks=[];
  const text=(x,y,value,size=14,color=ink,align='left')=>marks.push({type:'text',x,y,text:value,size,color,align});
  const line=(x,y,x2,y2,color=ink,width=2)=>marks.push({type:'line',x,y,x2,y2,color,width});
  const signed=value=>(value<0?'−':'+')+Math.abs(value).toFixed(2);
  text(18,29,'Through a converging lens',w<400?18:20);text(18,53,atFocus?'At the focal plane · no finite image':virtual?'Virtual image · upright':'Real image · inverted',14,muted);
- text(18,78,'Green: parallel ray   Gold: central ray',12,muted);
+ text(18,78,'Blue: parallel ray   Gold: central ray',12,muted);
+ marks.push({type:'rect',x:14,y:94,w:w-28,h:170,color:'#f0f4fb'});
  const left=Math.max(u,f,virtual?Math.min(-di,u*3):0)*1.18,right=Math.max(f,!atFocus&&!virtual?Math.min(di,u*3):0)*1.18;
  const sx=(w-44)/(left+right),sy=51/Math.max(ho,hi===null?ho:Math.min(Math.abs(hi),ho*3)),axis=177,L=22+left*sx;
  const X=x=>L+x*sx,Y=y=>axis-y*sy,box={left:18,right:w-18,top:98,bottom:259};
@@ -54,7 +57,7 @@ export function lensExperiment(params,viewport){
  line(18,axis,w-18,axis,'#a8bbb0',1);
  const outline=[];for(let i=0;i<=24;i++){const t=i/24;outline.push({x:L+8*Math.sin(Math.PI*t),y:axis-66+132*t});}
  marks.push({type:'polyline',points:outline,color:'#9bbdad',width:2},{type:'polyline',points:outline.map(point=>({x:2*L-point.x,y:point.y})),color:'#9bbdad',width:2});
- line(L,axis-67,L,axis+67,'#d1e1d8',1);
+ line(L,axis-62,L,axis+62,'#bad5ed',8);line(L-2,axis-58,L-2,axis+58,'#e6f4ff',2);
  for(const [x,label]of [[-f,'F'],[f,"F′"]]){marks.push({type:'circle',x:X(x),y:axis,r:3,color:ink});text(X(x),axis+19,label,12,ink,'center');}
  const extent=right*(.15+.85*p);
  segment(-u,ho,0,ho,green,2);segment(0,ho,extent,ho*(1-extent/f),green,2);
@@ -81,7 +84,7 @@ export const experimentStarters=[
  {id:'curated-thin-lens',source:'curated',version:1,createdAt,catalog:{topic:'Converging lenses',grade:'Grades 9–12',description:'Trace rays and cross the boundary between real and virtual images.',tags:['physics','optics','lenses','ray diagrams']},lesson:{
   title:'Does a lens always magnify?',domain:'Physics · Optics',claim:'A converging lens always produces a larger, upright image.',verdict:'misconception',
   explanation:'A converging lens can form either a real, inverted image or a virtual, upright image. With object distance u and positive focal length f, the image distance is v = fu ÷ (u − f), and signed magnification is −v ÷ u. A negative image distance places a virtual image on the object side. At u = f, the outgoing rays are parallel and there is no finite image.',
-  assumptions:['An ideal thin converging lens in air, using the paraxial ray approximation. Distances and heights are in centimetres.','A real object is on the left. Positive image distance means the opposite side; negative image distance means the object side. Negative magnification means inverted.','Lens thickness, aberrations, diffraction, and aperture clipping are excluded. The drawing is a schematic; its horizontal and vertical scales may differ.','Green rays enter parallel to the axis and pass through the far focal point. Gold rays pass through the optical centre. Dashed lines are backward extensions.','At the focal-plane limit the model reports no finite image. Extreme images may lie outside the drawing window; the signed metrics remain complete.'],
+  assumptions:['An ideal thin converging lens in air, using the paraxial ray approximation. Distances and heights are in centimetres.','A real object is on the left. Positive image distance means the opposite side; negative image distance means the object side. Negative magnification means inverted.','Lens thickness, aberrations, diffraction, and aperture clipping are excluded. The drawing is a schematic; its horizontal and vertical scales may differ.','Blue rays enter parallel to the axis and pass through the far focal point. Gold rays pass through the optical centre. Dashed lines are backward extensions.','At the focal-plane limit the model reports no finite image. Extreme images may lie outside the drawing window; the signed metrics remain complete.'],
   controls:[{id:'object_distance',label:'Object distance',min:5,max:60,step:1,initial:30,unit:'cm'},{id:'focal_length',label:'Focal length',min:5,max:20,step:1,initial:10,unit:'cm'},{id:'object_height',label:'Object height',min:1,max:6,step:.5,initial:3,unit:'cm'}],
   prediction:{prompt:'A 3 cm object is 30 cm from a converging lens of focal length 10 cm. What image forms?',options:['Larger and upright','Smaller and inverted','No image can form'],correctIndex:1,feedback:['This object is beyond twice the focal length. Its image is real, smaller, and inverted.','Yes. The image forms 15 cm away with magnification −0.5 and height −1.5 cm.','A finite real image forms because the object is beyond the focal plane.']},
   followup:{prompt:'Move the object to 5 cm while the focal length stays 10 cm. What changes?',options:['The image stays real and inverted','The image becomes virtual, upright, and larger'],correctIndex:1,feedback:['Inside the focal length, emerging rays diverge. Their backward extensions meet on the object side.','Yes. The virtual image is 10 cm on the object side, with magnification +2.']},code:`return (${lensExperiment.toString()})(params, viewport);`

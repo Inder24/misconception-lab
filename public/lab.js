@@ -1,3 +1,4 @@
+import {setupDebugPanel,traceRequest} from './debug-panel.js';
 import {starter} from './starter.js';
 import {validateLesson} from './lesson-schema.js';
 import {LabState} from './lab-state.js';
@@ -10,6 +11,8 @@ import {setupPlanner,showWorkspace} from './planner.js';
 import {createPlayback} from './playback.js';
 import {$,text,renderChoices,renderMetrics,renderReceipt,addMessage,showError,conditionLabels,renderComparison} from './lab-ui.js';
 
+const debug=setupDebugPanel();
+const request=traceRequest(apiRequest,debug.journal,debug.setCode);
 const state=new LabState(starter);
 let selected=null,host=null,baselineHost=null,needsReload=false,hasRun=false,loading=false;
 let buildController=null,tutorController=null,buildEpoch=0,lessonEpoch=0,runEpoch=0,tutorEpoch=0;
@@ -20,7 +23,7 @@ const sameIdentity=(a,b)=>a.lessonId===b.lessonId&&a.version===b.version;
 const currentIdentity=()=>({...state.identity});
 try{const entries=JSON.parse(localStorage.getItem('ml-lessons-v3')||localStorage.getItem('ml-lessons-v2')||'[]');if(Array.isArray(entries))shelf=entries.filter(x=>{if(x?.source!=='astra'||typeof x.id!=='string'||!validateLesson(x.lesson))return false;try{new LabState(x);return true;}catch{return false;}}).slice(0,8);}catch{}
 
-async function request(path,body,{signal}={}){
+async function apiRequest(path,body,{signal}={}){
   const timeout=AbortSignal.timeout(120000);
   const response=await fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:signal?AbortSignal.any([signal,timeout]):timeout});
   let data;try{data=await response.json();}catch{throw Error('The server returned an unreadable response. Please try again.');}
@@ -28,10 +31,11 @@ async function request(path,body,{signal}={}){
   return data;
 }
 function setActions(){
+  text('coach-stage',hasRun?'03 / RETHINK':'01 / MAKE A PREDICTION');text('coach-title',hasRun?'What did you notice?':'What’s your hunch?');text('coach-hint',hasRun?'Your first prediction is kept below. Compare it with what happened.':'No pressure to be right. This is where discovery starts.');
   const busy=Boolean(buildController)||imageBusy||loading||plannerBusy||conditionPending;
   $('generate').disabled=busy||tutorBusy;$('revise').disabled=busy||tutorBusy;$('claim').disabled=Boolean(buildController);
   $('run').disabled=busy||(!state.prediction&&selected===null);
-  $('run-mobile').disabled=$('run').disabled;
+  $('run-mobile').disabled=$('run').disabled;text('run-mobile',hasRun?'Replay experiment →':'Test my prediction →');$('try-starter').disabled=busy||tutorBusy;
   $('controls').disabled=busy||!hasRun;
   $('pin-run').disabled=busy||!state.results;
   $('ask-tutor').disabled=busy||tutorBusy||!state.results;
@@ -113,7 +117,7 @@ async function loadLesson(entry,{preservePinned=false,signal}={}){
 function recordPrediction({selectedIndex=selected,reason=$('prediction-reason').value,confidence=Number($('confidence').value)}={},identity=state.identity){
   state.predict({selectedIndex,reason:reason.trim()||'No written reason provided.',confidence},identity);setPredictionControls();setActions();syncVoice();
 }
-function handleRunError(error){if(error.name==='AbortError')return;needsReload=true;text('frame-error',error.message||'This experiment could not run. Replay to retry.');$('frame-error').hidden=false;text('run-status','Replay to retry the experiment');setActions();}
+function handleRunError(error){if(error.name==='AbortError')return;debug.journal.add({stage:'sandbox',status:'failed',detail:error.message});needsReload=true;text('frame-error',error.message||'This experiment could not run. Replay to retry.');$('frame-error').hidden=false;text('run-status','Replay to retry the experiment');setActions();}
 async function runCurrent({animate=true,automaticTutor=true,signal}={}){
   signal?.throwIfAborted();if(loading||buildController||conditionPending||plannerBusy)throw Error('Wait for the current lab action to finish.');
   if(!state.prediction)recordPrediction();
@@ -126,7 +130,7 @@ async function runCurrent({animate=true,automaticTutor=true,signal}={}){
   try{
     const result=await host.run(params,viewport,{signal});
     if(!valid())return null;
-    state.recordRun(result,{...identity,params,viewport});hasRun=true;
+    state.recordRun(result,{...identity,params,viewport});hasRun=true;debug.journal.add({stage:'sandbox',status:'passed',detail:`Experiment executed · ${result.metrics.length} measurements returned`});
     $('prediction-cover').hidden=true;$('experiment-container').hidden=false;renderMetrics($('metrics'),result.metrics);text('summary',result.summary);text('run-status','Change a control to test another condition');text('run','↻ Replay experiment');
     $('explanation').hidden=false;$('followup').hidden=false;
     text('verdict',({misconception:'A BELIEF WORTH REVISING',partly_true:'IT DEPENDS ON THE CONDITIONS',accurate:'YOUR CLAIM HOLDS UP',not_testable:'AN EXPLANATION, NOT A PROOF'})[state.lesson.verdict]);
@@ -153,10 +157,10 @@ $('clear-comparison').addEventListener('click',()=>{state.clearPinned();baseline
 
 async function checkCandidate(lesson,{signal}={}){
   const container=document.createElement('div');container.style.width='720px';$('preflight-container').append(container);const candidate=new SandboxExperiment(container,{title:'Checking generated experiment'});
-  try{await candidate.load(lesson.code,{signal});return await preflightLesson(lesson,(params,viewport,options)=>candidate.run(params,viewport,options),{signal,onProgress:({completed,total})=>text('generation-detail',`Checking case ${completed} of ${total} · controls, sizes, and animation`)});}
+  try{await candidate.load(lesson.code,{signal});return await preflightLesson(lesson,(params,viewport,options)=>candidate.run(params,viewport,options),{signal,onProgress:({completed,total,check})=>{text('generation-detail',`Checking case ${completed} of ${total} · controls, sizes, and animation`);debug.journal.add({stage:'sandbox',status:check.passed?'passed':'failed',detail:`Case ${completed}/${total} · ${check.detail}`});}});}
   finally{candidate.destroy();container.remove();}
 }
-function cancelBuild(){buildEpoch++;buildController?.abort();buildController=null;$('generation').hidden=true;setActions();}
+function cancelBuild(){if(buildController)debug.journal.add({stage:'build',status:'cancelled',detail:'Cancellation requested'});buildEpoch++;buildController?.abort();buildController=null;$('generation').hidden=true;setActions();}
 $('cancel').addEventListener('click',()=>{cancelBuild();planner?.cancel();text('run-status',state.prediction?'Your current experiment is still available':'Make a prediction first');});
 async function buildLesson(endpoint,payload,{signal,preservePinned=false}={}){
   if(buildController||imageBusy||tutorBusy)throw Error('Let the current request finish before building another experiment.');
@@ -166,6 +170,7 @@ async function buildLesson(endpoint,payload,{signal,preservePinned=false}={}){
     await playback.reset();
     const entry=await buildCheckedLesson({endpoint,payload,request,check:checkCandidate,signal:combined,onProgress:(event,receipt)=>{
       if(epoch!==buildEpoch)return;
+      debug.journal.add({stage:event.stage,status:event.status,detail:event.detail});
       const titles={build:'Designing your experiment',test:'Testing the generated experiment',review:'Checking the explanation and results',repair:'Repairing the experiment',check:'A check found something to fix',ready:'Your experiment is ready'};
       text('generation-title',titles[event.stage]||'Checking experiment');text('generation-detail',event.detail);renderReceipt(receipt||[]);
     }});
@@ -254,7 +259,7 @@ playback=createPlayback({
     $('playback-progress').value=Math.round(progress*100);text('playback-position',Math.round(progress*100)+'%');$('playback-speed').value=String(speed);
   },onError:handleRunError
 });
-$('playback-toggle').addEventListener('click',()=>{if(playback.getState().playing)playback.pause();else if(needsReload)runCurrent().catch(handleRunError);else playback.play();});
+$('playback-toggle').addEventListener('click',()=>{debug.journal.add({stage:'playback',detail:playback.getState().playing?'Pause requested':'Play requested'});if(playback.getState().playing)playback.pause();else if(needsReload)runCurrent().catch(handleRunError);else playback.play();});
 $('playback-progress').addEventListener('input',()=>playback.seek(Number($('playback-progress').value)/100));
 $('playback-speed').addEventListener('change',()=>playback.setSpeed(Number($('playback-speed').value)));
 $('reset-conditions').addEventListener('click',async()=>{
@@ -289,3 +294,7 @@ addEventListener('pagehide',()=>{cancelBuild();planner?.cancel();invalidateTutor
 const initial=shelf.find(x=>x.id===new URL(location.href).searchParams.get('lesson'))||starter;
 loadLesson(initial).catch(async error=>{showError(error.message);if(initial!==starter)await loadLesson(starter).catch(fallback=>showError(fallback.message));});
 fetch('/api/status').then(r=>r.json()).then(data=>{apiReady=Boolean(data.ready);text('connection',apiReady?'API key configured':'API setup needed');$('connection').dataset.ready=String(apiReady);text('tutor-status',apiReady?'Make a prediction and run the lab to explore together.':'Built-in lesson available · AI features need API setup.');}).catch(()=>text('connection','Server unavailable'));
+
+$('try-starter').addEventListener('click',()=>loadLesson(starter).then(()=>{$('lesson-title').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}).catch(error=>showError(error.message)));
+
+for(const link of document.querySelectorAll('.site-header nav a'))link.addEventListener('click',()=>showWorkspace('experiment'));
