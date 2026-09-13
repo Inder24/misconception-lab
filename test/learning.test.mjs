@@ -86,3 +86,34 @@ test('per-user concurrency gate releases after upstream failure and cancellation
  const abort=new AbortController();abort.abort();let called=false;
  assert.equal((await handleAPI(req('repair',undefined,{},abort.signal),key,async()=>{called=true;return upstream(lesson);})).status,502);assert.equal(called,false);
 });
+
+test('revision validation logs identify the rejected field without logging lesson content or credentials',async(t)=>{
+ const logs=[];t.mock.method(console,'info',line=>logs.push(JSON.parse(line)));
+ const invalid={...lesson,assumptions:Array(7).fill('PRIVATE_LESSON_TEXT')};
+ const response=await handleAPI(req('revise'),key,async()=>upstream(invalid));
+ assert.equal(response.status,502);const body=await response.json();
+ assert.equal(body.code,'invalid_output');assert.ok(body.requestId);
+ const rejected=logs.find(x=>x.event==='output_rejected');
+ assert.ok(rejected);assert.equal(rejected.requestId,body.requestId);
+ assert.ok(rejected.issues.some(x=>x.includes('assumptions')));
+ assert.doesNotMatch(JSON.stringify(logs),/test-secret|PRIVATE_LESSON_TEXT/);
+});
+
+test('transport failure is reported separately from invalid Astra output',async(t)=>{
+ const logs=[];t.mock.method(console,'info',line=>logs.push(JSON.parse(line)));
+ const response=await handleAPI(req('revise'),key,async()=>{throw new TypeError('fetch failed test-secret');});
+ const body=await response.json();assert.equal(body.code,'connection_error');assert.match(body.error,/connect/i);
+ assert.ok(logs.some(x=>x.event==='request_failed'&&x.code==='connection_error'));
+ assert.doesNotMatch(JSON.stringify(logs)+JSON.stringify(body),/test-secret/);
+});
+
+test('revision communicates assumption bounds in the strict model output contract',async()=>{
+ let sent;
+ const response=await handleAPI(req('revise'),key,async(_,init)=>{sent=JSON.parse(init.body);return upstream(lesson);});
+ assert.equal(response.status,200);
+ const assumptions=sent.text.format.schema.properties.assumptions;
+ assert.equal(assumptions.minItems,1);
+ assert.equal(assumptions.maxItems,6);
+ assert.equal(assumptions.items.minLength,1);
+ assert.equal(assumptions.items.maxLength,500);
+});
