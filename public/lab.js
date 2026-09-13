@@ -27,6 +27,17 @@ let planner=null,playback=null,dropLab=null,mathLab=null,guide=null,walkthroughB
 let shelf=[],tutorHistory=[],followupQuestion=starter.lesson.followup,controlTimer;
 const sameIdentity=(a,b)=>a.lessonId===b.lessonId&&a.version===b.version;
 const currentIdentity=()=>({...state.identity});
+const localPreview=['localhost','127.0.0.1'].includes(location.hostname);
+function showSignInState(authenticated){
+  const connected=localPreview||authenticated;
+  $('sign-in').hidden=connected;$('sign-in-state').hidden=!connected;
+  text('sign-in-state',localPreview?'Local preview':'Signed in');
+}
+function updateSignInLink(){
+  $('sign-in').href='/signin-with-chatgpt?return_to='+encodeURIComponent(location.pathname+location.search+location.hash);
+}
+showSignInState(false);updateSignInLink();addEventListener('hashchange',updateSignInLink);
+for(const event of ['pointerdown','focus','click'])$('sign-in').addEventListener(event,updateSignInLink);
 const isDropLab=()=>state.envelope.source==='built-in'&&state.identity.lessonId===starter.id&&state.lesson.code===starter.lesson.code;
 const isMathLab=()=>state.envelope.source===mathStarter.source&&state.identity.lessonId===mathStarter.id&&state.lesson.code===mathStarter.lesson.code;
 const isCradleLab=()=>state.envelope.source===newtonCradle.source&&state.identity.lessonId===newtonCradle.id&&state.lesson.code===newtonCradle.lesson.code;
@@ -380,7 +391,7 @@ addEventListener('pagehide',()=>{cancelBuild();planner?.cancel();guide?.cancel()
 setupFlow({onLeaveLab:()=>{clearTimeout(resizeTimer);guide?.cancel();playback.pause();live.stop().catch(error=>text('voice-status',error.message));}});
 const initial=shelf.find(x=>x.id===new URL(location.href).searchParams.get('lesson'))||starter;
 loadLesson(initial).catch(async error=>{showError(error.message);if(initial!==starter)await loadLesson(starter).catch(fallback=>showError(fallback.message));});
-fetch('/api/status').then(r=>r.json()).then(data=>{apiReady=Boolean(data.ready);text('connection',apiReady?'API key configured':'API setup needed');$('connection').dataset.ready=String(apiReady);text('tutor-status',apiReady?'Make a prediction and run the lab to explore together.':'Built-in lesson available · AI features need API setup.');}).catch(()=>text('connection','Server unavailable'));
+fetch('/api/status',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Status unavailable');return r.json();}).then(data=>{showSignInState(data.authenticated===true);apiReady=Boolean(data.ready);text('connection',apiReady?'API key configured':'API setup needed');$('connection').dataset.ready=String(apiReady);text('tutor-status',apiReady?'Make a prediction and run the lab to explore together.':'Built-in lesson available · AI features need API setup.');}).catch(()=>text('connection','Server unavailable'));
 
 $('try-starter').addEventListener('click',()=>loadLesson(starter).then(()=>{if(currentScreen()==='choose')showScreen('lab');}).catch(error=>showError(error.message)));
 for(const [id,entry]of [['try-math',mathStarter],['try-cradle',newtonCradle]])$(id).addEventListener('click',async()=>{try{const result=await openStarter(entry);if(result?.ok&&currentScreen()==='choose')showScreen('lab');}catch(error){if(error.name!=='AbortError')showError(error.message);}});
