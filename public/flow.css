@@ -26,16 +26,6 @@ body[data-screen] .site-header nav { gap:28px; margin-left:auto; }
 body[data-screen] .site-header nav a { font-size:13px; font-weight:550; color:var(--gallery-muted); }
 body[data-screen] .site-header nav a:hover,
 body[data-screen] .site-header nav a[aria-current="page"] { color:var(--gallery-blue); }
-body[data-screen] .site-account { flex-shrink:0; }
-body[data-screen] .sign-in-button {
-  display:inline-flex; align-items:center; justify-content:center; min-height:44px;
-  padding:10px 16px; border:1px solid var(--gallery-blue); border-radius:8px;
-  background:var(--gallery-blue); color:#fff; font-size:14px; font-weight:600;
-  line-height:1.4; white-space:nowrap;
-}
-body[data-screen] .sign-in-button:hover { background:var(--gallery-blue-hover); border-color:var(--gallery-blue-hover); }
-body[data-screen] .sign-in-button:focus-visible { outline:3px solid var(--gallery-blue); outline-offset:3px; }
-body[data-screen] .sign-in-state { color:var(--gallery-muted); font-size:14px; white-space:nowrap; }
 body[data-screen] #main-content { max-width:1400px; margin:0 auto; padding:0 48px; }
 body[data-screen] .flow-screen { min-width:0; }
 body[data-screen] .flow-back {

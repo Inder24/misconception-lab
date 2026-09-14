@@ -3,8 +3,22 @@ import {createLiveProtocol,safeLabState} from './live-protocol.js';
 // External browser APIs are injectable so media and network lifecycle can be tested without a paid call.
 export function createLivePartner({getState,onTool,onStatus=()=>{},onTranscript=()=>{},audioElement},platform=globalThis){
  let active=null,serial=0;
+ let guestId;
  const status=(state,message,extra={})=>onStatus({state,message,microphone:Boolean(active?.microphone&&!active.stopping),...extra});
  const alive=attempt=>active===attempt&&!attempt.stopping;
+ function getGuestId(){
+  if(guestId)return guestId;
+  const storageKey='misconception-lab-guest-id';
+  try{
+   const saved=platform.localStorage?.getItem(storageKey);
+   if(/^[a-z0-9][a-z0-9-]{15,79}$/i.test(saved||''))return guestId=saved;
+  }catch{}
+  const generated=platform.crypto?.randomUUID?.()||`guest-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,14)}`;
+  guestId=generated;
+  try{platform.localStorage?.setItem(storageKey,guestId);}catch{}
+  return guestId;
+ }
+ const requestHeaders=()=>({'content-type':'application/json','x-misconception-lab-guest':getGuestId()});
  function releaseMedia(attempt){
   attempt.microphone?.getTracks().forEach(track=>track.stop());
   attempt.audio?.pause();
@@ -23,7 +37,7 @@ export function createLivePartner({getState,onTool,onStatus=()=>{},onTranscript=
   if(attempt.hangup)return attempt.hangup;
   attempt.hangup=(async()=>{
    try{
-    const response=await platform.fetch('/api/live/stop',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({token:attempt.token}),keepalive:true,signal:AbortSignal.timeout(15000)});
+   const response=await platform.fetch('/api/live/stop',{method:'POST',headers:requestHeaders(),body:JSON.stringify({token:attempt.token}),keepalive:true,signal:AbortSignal.timeout(15000)});
     return response.ok;
    }catch{return false;}
   })();
@@ -41,7 +55,7 @@ export function createLivePartner({getState,onTool,onStatus=()=>{},onTranscript=
     attempt.channel.send(JSON.stringify({type:'session.close',event_id:`close_${attempt.id}`}));
     finalized=await drained;
    }
-   // The signed server handle permits only this user's session to be ended.
+   // The signed server handle permits only this browser's session to be ended.
    const confirmed=finalized||await serverStop(attempt);
    cleanup(attempt);
    if(!quiet)status(disconnected?'disconnected':'stopped',confirmed||!attempt.token?(disconnected?'Voice disconnected. Microphone is off.':'Voice stopped. Microphone is off.'):'Microphone is off. Server session finalization could not be confirmed.',{finalized:Boolean(finalized),usage:attempt.usage});
@@ -103,7 +117,7 @@ export function createLivePartner({getState,onTool,onStatus=()=>{},onTranscript=
    if(!alive(attempt))return;
    await waitForIce(attempt);if(!alive(attempt))return;
    // Keep the bounded HTTP exchange alive on Stop so a late session gets its owned hangup handle.
-   const response=await platform.fetch('/api/live/session',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({sdp:attempt.peer.localDescription.sdp,state:safeLabState(getState())}),signal:AbortSignal.timeout(40000)});
+   const response=await platform.fetch('/api/live/session',{method:'POST',headers:requestHeaders(),body:JSON.stringify({sdp:attempt.peer.localDescription.sdp,state:safeLabState(getState())}),signal:AbortSignal.timeout(40000)});
    let result;try{result=await response.json();}catch{throw new Error('Voice server returned an unreadable response.');}
    if(!response.ok)throw new Error(result.error||'Voice could not connect.');
    attempt.token=result.token;

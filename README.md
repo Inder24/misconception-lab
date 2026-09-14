@@ -8,7 +8,7 @@ Turn an everyday belief into an experiment you can challenge with an AI lab part
 
 [Watch the demo](https://youtu.be/SX8zoD2jKO8)
 
-Built-in experiments are available to everyone. For AI-powered creation, sketch interpretation, tutoring, and voice, visitors sign in with their own ChatGPT account; they do not need to provide an API key.
+Built-in experiments and AI-powered creation are available without a visitor login. The deployed app uses its server-side Sites secret for Astra, visual interpretation, tutoring, and voice; the API key never reaches the browser.
 
 ## Why it is different
 
@@ -186,15 +186,15 @@ Experiments are educational models, not empirical proof. Execution checks catch 
 
 Lesson history stays in the current browser; URL IDs are local shelf references, not cross-device sharing links. Images and transcripts are not persisted in the shelf.
 
-The Sites address is [misconception-lab.likhariinder.chatgpt.site](https://misconception-lab.likhariinder.chatgpt.site). The homepage and built-in experiments are public. For AI features, click **Sign in with ChatGPT** in the header and use your own ChatGPT account; no personal API key is needed. Sites handles sign-in and returns you to the same page. The header shows **Signed in** after authentication, or **Local preview** on the development server. Manage site access through Sites sharing settings.
+The Sites address is [misconception-lab.likhariinder.chatgpt.site](https://misconception-lab.likhariinder.chatgpt.site). The homepage, built-in experiments, and AI features are available to guest visitors without a ChatGPT login or personal API key. The app uses the configured server-side Sites secret for requests, so it is never bundled into frontend code or exposed to visitors.
 
 For the hosted app, set `OPENAI_API_KEY` as a **secret** in the Site's runtime environment variables, then deploy a saved version to apply the change. `.env.local` is only for local development; it is never bundled or uploaded. The existing key is configured for the initial Sites deployment. Keep API keys out of `.openai/hosting.json`, frontend code, and Git.
 
-`npm run build` emits a self-contained Cloudflare Worker at `dist/server/index.js` and copies the Site manifest to `dist/.openai/hosting.json`. The source manifest records the existing Site so later deployments reuse it. AI routes expect a trusted `oai-authenticated-user-id` from OpenAI Sites dispatch and an exact same-origin request. `/api/status` exposes only a sign-in boolean, not the user's identity. Another hosting platform needs a trusted authentication integration. Do not expose the local developer identity publicly.
+`npm run build` emits a self-contained Cloudflare Worker at `dist/server/index.js` and copies the Site manifest to `dist/.openai/hosting.json`. The source manifest records the existing Site so later deployments reuse it. AI routes accept exact same-origin requests; `/api/status` exposes readiness only. Voice sessions use a browser-local opaque guest identifier and a server-signed stop token, neither of which reveals the API key.
 
 AI requests keep their lifecycle state within the request, with abort signals and a 110-second upstream timeout. There is no shared per-user busy lock to retain after a cancelled invocation. The client guards duplicate actions and discards responses from cancelled or superseded experiments; separate browser tabs can make independent requests.
 
-Live sessions use a server-side signed ownership token, with the API key as the signing secret unless `LIVE_SESSION_SECRET` is configured. Key rotation invalidates outstanding stop tokens; configure a stable separate server secret for deployed use. Session duration is bounded by server configuration. Interrupting speech does not inherently cancel backend work; the application separately guards cancellation and stale lesson versions.
+Live sessions use a server-side signed ownership token bound to the browser-local guest identifier. Session duration is bounded by server configuration. Interrupting speech does not inherently cancel backend work; the application separately guards cancellation and stale lesson versions.
 
 ## Current verification status
 

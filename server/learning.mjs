@@ -126,8 +126,6 @@ export async function handleLearningRequest(request,env={},fetcher=fetch){
  const route=new URL(request.url).pathname.replace(/^\/api\//,'');
  if(!routes.has(route))return null;
  if(request.method!=='POST')return json({error:'Use POST.'},405);
- const user=request.headers.get('oai-authenticated-user-id')?.trim();
- if(!user)return json({error:'Sign in to use the learning assistant.'},401);
  if(request.headers.get('origin')!==new URL(request.url).origin)return json({error:'Open the lab directly to use the learning assistant.'},403);
  if(request.headers.get('content-type')?.split(';')[0].trim().toLowerCase()!=='application/json')return json({error:'Send a JSON request.'},415);
  let data;try{data=await readJSON(request,['vision','import-brief'].includes(route)?Math.ceil(MAX_IMAGE_BYTES/3)*4+4096:['lessons','plan'].includes(route)?30000:300000);}catch{return json({error:'The request is invalid or too large. Check the input and try again.'},400);}

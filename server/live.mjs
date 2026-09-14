@@ -6,6 +6,10 @@ const pending=new Set();
 const encoder=new TextEncoder();
 const toBase64=bytes=>btoa(String.fromCharCode(...bytes)).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
 const fromBase64=text=>Uint8Array.from(atob(text.replaceAll('-','+').replaceAll('_','/')),c=>c.charCodeAt(0));
+const guestOwner=request=>{
+ const id=request.headers.get('x-misconception-lab-guest')?.trim();
+ return id&&/^[a-z0-9][a-z0-9-]{15,79}$/i.test(id)?`guest:${id}`:null;
+};
 async function signingKey(secret){return crypto.subtle.importKey('raw',encoder.encode(`misconception-lab-live-ownership:${secret}`),{name:'HMAC',hash:'SHA-256'},false,['sign','verify']);}
 async function makeToken(id,owner,origin,secret){
  const payload=toBase64(encoder.encode(JSON.stringify({id,owner,origin,expires:Date.now()+24*60*60*1000})));
@@ -37,15 +41,15 @@ export async function handleLiveRequest(request,env,fetcher=fetch){
  if(!path.startsWith('/api/live/'))return null;
  if(!['/api/live/session','/api/live/stop'].includes(path))return json({error:'Unknown voice route.'},404);
  if(request.method!=='POST')return json({error:'Use POST.'},405);
- const owner=request.headers.get('oai-authenticated-user-id');
- if(!owner)return json({error:'Sign in to use voice.'},401);
+ const owner=request.headers.get('oai-authenticated-user-id')?.trim()||guestOwner(request);
+ if(!owner)return json({error:'Unable to establish a guest voice session. Refresh and try again.'},400);
  if(request.headers.get('origin')!==url.origin)return json({error:'Open the lab directly to use voice.'},403);
  if(!request.headers.get('content-type')?.startsWith('application/json'))return json({error:'Send a JSON voice request.'},415);
  let data;try{data=await readBody(request);}catch{return json({error:'The voice request is invalid or too large.'},400);}
  if(!env.OPENAI_API_KEY)return json({error:'Voice needs secure OpenAI API-key setup on the server.'},503);
  if(path==='/api/live/stop'){
   const id=await checkToken(data?.token,owner,url.origin,env.OPENAI_API_KEY);
-  if(!id)return json({error:'This voice session does not belong to the signed-in user or has expired.'},403);
+  if(!id)return json({error:'This voice session belongs to another browser or has expired.'},403);
   try{return await hangup(id,env,fetcher)?json({stopped:true}):json({error:'Audio stopped locally; the server could not confirm session finalization.'},502);}
   catch{return json({error:'Audio stopped locally; session finalization could not be confirmed.'},502);}
  }
